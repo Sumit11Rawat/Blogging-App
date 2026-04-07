@@ -57,6 +57,7 @@ app.use("/auth",(req, res, next) => {
 app.use("/post",(req,res,next)=>{
   next();
 },postRoutes)
+app.use("/uploads", express.static("uploads"));
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

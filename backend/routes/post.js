@@ -7,6 +7,29 @@ const Post = require("../models/post");
 const Comment = require("../models/comment"); // ✅ Capital 'C' - must match your model file export
 const verifyToken = require("../middleware/auth");
 
+
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only images allowed"), false);
+  }
+};
+
+const upload = multer({ storage, fileFilter });
+
+
 // ─────────────────────────────────────────────────────────────
 // 📌 HELPER: Build nested comment tree from flat array
 // ─────────────────────────────────────────────────────────────
@@ -77,38 +100,70 @@ router.get("/", async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 // 📌 CREATE POST
 // ─────────────────────────────────────────────────────────────
-router.post("/create", verifyToken, async (req, res) => {
-  try {
-    const { title, content, tags, image, status } = req.body;
-
-    if (!title?.trim() || !content?.trim()) {
-      return res.status(400).json({ message: "Title and content are required" });
+router.post(
+    "/create",
+    verifyToken,
+    upload.single("image"), // ✅ REQUIRED
+    async (req, res) => {
+      try {
+        console.log("BODY:", req.body);   // 👈 DEBUG
+        console.log("FILE:", req.file);   // 👈 DEBUG
+  
+        const title = req.body?.title;
+        const content = req.body?.content;
+        const status = req.body?.status;
+  
+        // ✅ Tags fix
+        let tags = [];
+        if (req.body?.tags) {
+          if (typeof req.body.tags === "string") {
+            try {
+              tags = JSON.parse(req.body.tags);
+            } catch {
+              tags = [];
+            }
+          } else {
+            tags = req.body.tags;
+          }
+        }
+  
+        if (!title?.trim() || !content?.trim()) {
+          return res.status(400).json({ message: "Title and content are required" });
+        }
+  
+        let imageUrl = "";
+  
+        if (req.file) {
+          imageUrl = `/uploads/${req.file.filename}`;
+        } else if (req.body?.image) {
+          imageUrl = req.body.image;
+        }
+  
+        const post = new Post({
+          title: title.trim(),
+          content: content.trim(),
+          tags,
+          image: imageUrl,
+          author: req.user.id,
+          status: status || "draft"
+        });
+  
+        await post.save();
+  
+        const populatedPost = await Post.findById(post._id)
+          .populate("author", "name email avatar");
+  
+        res.status(201).json({
+          message: "Post created successfully",
+          post: populatedPost
+        });
+  
+      } catch (error) {
+        console.error("❌ ERROR:", error);
+        res.status(500).json({ message: error.message });
+      }
     }
-
-    const post = new Post({
-      title: title.trim(),
-      content: content.trim(),
-      tags: Array.isArray(tags) ? tags : [],
-      image: image || "",
-      author: req.user.id,
-      status: status || "draft"
-    });
-
-    await post.save();
-
-    const populatedPost = await Post.findById(post._id)
-      .populate("author", "name email avatar");
-
-    res.status(201).json({
-      message: "Post created successfully",
-      post: populatedPost
-    });
-
-  } catch (error) {
-    console.error("❌ POST /post/create error:", error);
-    res.status(500).json({ message: "Server error creating post" });
-  }
-});
+  );
 
 // ─────────────────────────────────────────────────────────────
 // 📌 GET SINGLE POST (PostDetail Page)

@@ -295,7 +295,7 @@ const postDetailStyle = `
     margin-bottom: 20px;
   }
 
-
+  /* ── POST IMAGE STYLES ── */
   .post-image {
     width: 100%;
     height: 360px;
@@ -311,6 +311,7 @@ const postDetailStyle = `
     width: 100%;
     height: 360px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     border-radius: 14px;
@@ -318,7 +319,9 @@ const postDetailStyle = `
     background: linear-gradient(135deg, var(--cream) 0%, #e4ddd0 100%);
     position: relative;
     border: 1px solid rgba(0,0,0,0.05);
+    gap: 10px;
   }
+  
   .post-image-placeholder::after {
     content: '';
     position: absolute;
@@ -332,6 +335,20 @@ const postDetailStyle = `
     );
     border-radius: 14px;
   }
+  
+  .placeholder-icon {
+    font-size: 32px;
+    opacity: 0.4;
+  }
+  
+  .placeholder-text {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+  }
+  
   .placeholder-glyph {
     font-family: 'Cormorant Garamond', serif;
     font-size: 80px;
@@ -383,7 +400,6 @@ const postDetailStyle = `
     padding-bottom: 16px;
     margin-bottom: 32px;
   }
-
 
   .comments-title {
     font-family: 'Cormorant Garamond', serif;
@@ -821,6 +837,15 @@ function wordCount(text) {
 
 function getInitials(name) {
   return name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U";
+}
+
+// ✅ Image helper: handles both URL and uploaded file paths (same as HomePage)
+const getImageSrc = (image) => {
+  if (!image) return null;
+  if (image.startsWith("http://") || image.startsWith("https://")) {
+    return image;                          // external URL — use as-is
+  }
+  return `http://localhost:8001${image}`;  // uploaded file — prepend backend
 }
 
 // ✅ NEW: Robust user comparison helper (userId primary, name fallback)
@@ -1450,11 +1475,27 @@ export default function PostDetail() {
                 </div>
               </div>
 
+              {/* ── FIXED IMAGE SECTION ── */}
               {post.image ? (
-                <img src={post.image} alt={post.title} className="post-image" style={{ marginBottom: '48px' }} />
+                <img 
+                  src={getImageSrc(post.image)} 
+                  alt={post.title} 
+                  className="post-image" 
+                  style={{ marginBottom: '48px' }}
+                  onError={(e) => {
+                    // if image fails to load, show placeholder
+                    e.target.style.display = "none";
+                    e.target.parentNode.innerHTML = `
+                      <div class="post-image-placeholder">
+                        <div class="placeholder-icon">🖼️</div>
+                        <div class="placeholder-text">Image unavailable</div>
+                      </div>`;
+                  }}
+                />
               ) : (
                 <div className="post-image-placeholder" style={{ marginBottom: '48px' }}>
-                  <span className="placeholder-glyph">✦</span>
+                  <div className="placeholder-icon">✍️</div>
+                  <div className="placeholder-text">No cover image</div>
                 </div>
               )}
 
