@@ -365,8 +365,8 @@ const SkeletonCard = () => (
 );
 
 export default function HomePage() {
-  const [posts, setPosts]               = useState([]);
-  const [loading, setLoading]           = useState(true);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
@@ -394,14 +394,16 @@ export default function HomePage() {
   }, []);
 
   /* ── image helper: handles both URL and uploaded file paths ── */
-  const getImageSrc = (image) => {
-    if (!image) return null;
-    if (image.startsWith("http://") || image.startsWith("https://")) {
-      return image;                          // external URL — use as-is
-    }
-    return `http://localhost:8001${image}`;  // uploaded file — prepend backend
-  };
-
+  // ✅ Replace your existing getImageSrc with this robust version
+const getImageSrc = (image) => {
+  if (!image) return null;
+  if (image.startsWith("http://") || image.startsWith("https://") || image.startsWith("data:")) {
+    return image;
+  }
+  // Normalize path: ensure it starts with /
+  const normalizedPath = image.startsWith("/") ? image : `/${image}`;
+  return `http://localhost:8001${normalizedPath}`;
+};
   const handleStartWriting = () => navigate(isAuthenticated ? "/dashboard" : "/login");
 
   return (

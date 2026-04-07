@@ -111,6 +111,7 @@ export default function Navbar() {
           transition: all 0.25s ease;
         }
 
+        /* REMOVE DEFAULT LINE */
         .nav-link::after {
           content: '';
           position: absolute;
@@ -132,6 +133,7 @@ export default function Navbar() {
           width: 24px;
         }
 
+        /* ACTIVE ONLY WHEN ROUTE MATCHES */
         .nav-link.active {
           color: var(--accent);
         }
@@ -239,7 +241,7 @@ export default function Navbar() {
       `}</style>
 
       <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
-        
+
         {/* LOGO */}
         <div className="logo" onClick={() => navigate("/")}>
           <div className="logo-mark">N</div>
@@ -251,9 +253,8 @@ export default function Navbar() {
           {navLinks.map((link) => (
             <li key={link.label}>
               <div
-                className={`nav-link ${
-                  location.pathname === link.href ? "active" : ""
-                }`}
+                className={`nav-link ${location.pathname === link.href ? "active" : ""
+                  }`}
                 onClick={() => handleNavClick(link)}
               >
                 {link.label}
@@ -288,9 +289,8 @@ export default function Navbar() {
         {navLinks.map((link) => (
           <div
             key={link.label}
-            className={`mobile-link ${
-              location.pathname === link.href ? "active" : ""
-            }`}
+            className={`mobile-link ${location.pathname === link.href ? "active" : ""
+              }`}
             onClick={() => handleNavClick(link)}
           >
             {link.label}

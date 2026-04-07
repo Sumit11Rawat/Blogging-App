@@ -84,12 +84,12 @@ router.get("/", async (req, res) => {
           "author.email": 1,
           "author._id": 1,
           // We return the comments array so the frontend .length check still works
-          comments: 1 
+          comments: 1
         }
       },
       { $sort: { createdAt: -1 } }
     ]);
-    
+
     res.json(posts);
   } catch (err) {
     console.error("❌ GET /post error:", err);
@@ -100,70 +100,64 @@ router.get("/", async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 // 📌 CREATE POST
 // ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// 📌 CREATE POST
+// ─────────────────────────────────────────────────────────────
 router.post(
-    "/create",
-    verifyToken,
-    upload.single("image"), // ✅ REQUIRED
-    async (req, res) => {
-      try {
-        console.log("BODY:", req.body);   // 👈 DEBUG
-        console.log("FILE:", req.file);   // 👈 DEBUG
-  
-        const title = req.body?.title;
-        const content = req.body?.content;
-        const status = req.body?.status;
-  
-        // ✅ Tags fix
-        let tags = [];
-        if (req.body?.tags) {
-          if (typeof req.body.tags === "string") {
-            try {
-              tags = JSON.parse(req.body.tags);
-            } catch {
-              tags = [];
-            }
-          } else {
-            tags = req.body.tags;
-          }
-        }
-  
-        if (!title?.trim() || !content?.trim()) {
-          return res.status(400).json({ message: "Title and content are required" });
-        }
-  
-        let imageUrl = "";
-  
-        if (req.file) {
-          imageUrl = `/uploads/${req.file.filename}`;
-        } else if (req.body?.image) {
-          imageUrl = req.body.image;
-        }
-  
-        const post = new Post({
-          title: title.trim(),
-          content: content.trim(),
-          tags,
-          image: imageUrl,
-          author: req.user.id,
-          status: status || "draft"
-        });
-  
-        await post.save();
-  
-        const populatedPost = await Post.findById(post._id)
-          .populate("author", "name email avatar");
-  
-        res.status(201).json({
-          message: "Post created successfully",
-          post: populatedPost
-        });
-  
-      } catch (error) {
-        console.error("❌ ERROR:", error);
-        res.status(500).json({ message: error.message });
+  "/create",
+  verifyToken,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const { title, content, tags, status, imageUrl } = req.body;
+
+      if (!title?.trim() || !content?.trim()) {
+        return res.status(400).json({ message: "Title and content are required" });
       }
+
+      let finalImageUrl = "";
+      if (req.file) {
+        finalImageUrl = `/uploads/${req.file.filename}`;
+      } else if (imageUrl) {
+        finalImageUrl = imageUrl;
+      } else if (req.body.image) {
+        finalImageUrl = req.body.image;
+      }
+
+      let tagsArray = [];
+      if (tags) {
+        try {
+          tagsArray = typeof tags === "string" ? JSON.parse(tags) : tags;
+        } catch {
+          tagsArray = tags.split(",").map(t => t.trim()).filter(Boolean);
+        }
+      }
+
+      const post = new Post({
+        title: title.trim(),
+        content: content.trim(),
+        tags: Array.isArray(tagsArray) ? tagsArray : [],
+        image: finalImageUrl,
+        author: req.user.id,
+        status: status || "draft"
+      });
+
+      await post.save();
+
+      const populatedPost = await Post.findById(post._id)
+        .populate("author", "name email avatar");
+
+      res.status(201).json({
+        message: "Post created successfully",
+        post: populatedPost
+      });
+
+    } catch (error) {
+      console.error("❌ CREATE ERROR:", error);
+      res.status(500).json({ message: error.message });
     }
-  );
+  }
+);
 
 // ─────────────────────────────────────────────────────────────
 // 📌 GET SINGLE POST (PostDetail Page)
@@ -192,11 +186,11 @@ router.get("/:id", async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// 📌 UPDATE POST
+// 📌 UPDATE POST (✅ Consolidated Clean Version)
 // ─────────────────────────────────────────────────────────────
-router.put("/:id", verifyToken, async (req, res) => {
+router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
   try {
-    const { title, content, tags, status } = req.body;
+    const { title, content, tags, status, imageUrl, removeImage } = req.body;
 
     if (!title?.trim() || !content?.trim()) {
       return res.status(400).json({ message: "Title and content are required" });
@@ -216,11 +210,32 @@ router.put("/:id", verifyToken, async (req, res) => {
       return res.status(403).json({ message: "Not authorized to edit this post" });
     }
 
+    // Update basic fields
     post.title = title.trim();
     post.content = content.trim();
-    post.tags = Array.isArray(tags) ? tags : [];
     post.status = status || post.status;
     post.updatedAt = new Date();
+
+    // Handle tags
+    if (tags !== undefined) {
+      try {
+        const parsedTags = typeof tags === "string" ? JSON.parse(tags) : tags;
+        post.tags = Array.isArray(parsedTags)
+          ? parsedTags.map(t => t.trim()).filter(Boolean)
+          : [];
+      } catch {
+        post.tags = [];
+      }
+    }
+
+    // Handle image updates (Sync with Frontend)
+    if (removeImage === "true") {
+      post.image = "";
+    } else if (req.file) {
+      post.image = `/uploads/${req.file.filename}`;
+    } else if (imageUrl && imageUrl.trim() !== "") {
+      post.image = imageUrl.trim();
+    }
 
     const updatedPost = await post.save();
     const populated = await Post.findById(updatedPost._id)
@@ -277,7 +292,7 @@ router.post("/:id/like", verifyToken, async (req, res) => {
 
     const userId = req.user.id;
     if (!post.likes) post.likes = [];
-    
+
     const hasLiked = post.likes.some(id => id.toString() === userId);
 
     let updatedPost;
@@ -295,9 +310,9 @@ router.post("/:id/like", verifyToken, async (req, res) => {
       );
     }
 
-    res.json({ 
-      likes: updatedPost.likes, 
-      hasLiked: !hasLiked 
+    res.json({
+      likes: updatedPost.likes,
+      hasLiked: !hasLiked
     });
   } catch (err) {
     console.error("❌ POST /post/:id/like error:", err);
@@ -407,13 +422,13 @@ router.post("/:postId/comments", verifyToken, async (req, res) => {
 
   } catch (err) {
     console.error("❌ POST /post/:postId/comments error:", err);
-    
+
     // Handle Mongoose validation errors
     if (err.name === 'ValidationError') {
       const messages = Object.values(err.errors).map(e => e.message);
       return res.status(400).json({ error: messages.join(", ") });
     }
-    
+
     res.status(500).json({ error: "Failed to create comment" });
   }
 });
@@ -479,7 +494,7 @@ router.post("/comments/:commentId/like", verifyToken, async (req, res) => {
 // router.delete("/comments/:commentId", verifyToken, async (req, res) => {
 //   try {
 //     const { commentId } = req.params;
-    
+
 //     if (!mongoose.Types.ObjectId.isValid(commentId)) {
 //       return res.status(400).json({ error: "Invalid comment ID" });
 //     }
@@ -493,7 +508,7 @@ router.post("/comments/:commentId/like", verifyToken, async (req, res) => {
 //     const post = await Post.findById(comment.postId);
 //     const isCommentAuthor = comment.author === req.user?.name || comment.author === req.user?.email;
 //     const isPostAuthor = post?.author?.toString() === req.user.id;
-    
+
 //     if (!isCommentAuthor && !isPostAuthor) {
 //       return res.status(403).json({ error: "Not authorized to delete this comment" });
 //     }
@@ -506,7 +521,7 @@ router.post("/comments/:commentId/like", verifyToken, async (req, res) => {
 //         await Comment.findByIdAndDelete(reply._id);
 //       }
 //     };
-    
+
 //     await deleteReplies(commentId);
 //     await Comment.findByIdAndDelete(commentId);
 
@@ -519,24 +534,24 @@ router.post("/comments/:commentId/like", verifyToken, async (req, res) => {
 // });
 // ── DELETE COMMENT ──
 router.delete("/comments/:id", verifyToken, async (req, res) => {
-    try {
-        const comment = await Comment.findById(req.params.id);
-        
-        if (!comment) {
-          return res.status(404).json({ message: 'Comment not found' });
-        }
-        
-        // ✅ Check if user owns the comment
-        if (String(comment.userId) !== String(req.user.userId)) {
-          return res.status(403).json({ 
-            message: 'Forbidden: You can only delete your own comments' 
-          });
-        }
-        
-        await Comment.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Comment deleted successfully' });
-      } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err.message });
-      }
-  });
+  try {
+    const comment = await Comment.findById(req.params.id);
+
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    // ✅ Check if user owns the comment
+    if (String(comment.userId) !== String(req.user.userId)) {
+      return res.status(403).json({
+        message: 'Forbidden: You can only delete your own comments'
+      });
+    }
+
+    await Comment.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Comment deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
 module.exports = router;

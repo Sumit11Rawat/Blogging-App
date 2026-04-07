@@ -824,10 +824,10 @@ const postDetailStyle = `
 // ── Helper Functions ──
 function formatDate(dateStr) {
   if (!dateStr) return "Recently";
-  return new Date(dateStr).toLocaleDateString("en-US", { 
-    month: "short", 
-    day: "numeric", 
-    year: "numeric" 
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
   });
 }
 
@@ -840,24 +840,27 @@ function getInitials(name) {
 }
 
 // ✅ Image helper: handles both URL and uploaded file paths (same as HomePage)
+// ✅ Replace your existing getImageSrc with this robust version
 const getImageSrc = (image) => {
-  if (!image) return null;
-  if (image.startsWith("http://") || image.startsWith("https://")) {
-    return image;                          // external URL — use as-is
-  }
-  return `http://localhost:8001${image}`;  // uploaded file — prepend backend
-}
+    if (!image) return null;
+    if (image.startsWith("http://") || image.startsWith("https://") || image.startsWith("data:")) {
+      return image;
+    }
+    // Normalize path: ensure it starts with /
+    const normalizedPath = image.startsWith("/") ? image : `/${image}`;
+    return `http://localhost:8001${normalizedPath}`;
+  };
 
 // ✅ NEW: Robust user comparison helper (userId primary, name fallback)
 const isSameUser = (commentUserId, commentAuthor, currentUserId, currentUserName) => {
   const cUserId = String(commentUserId || "").trim().toLowerCase();
   const curUserId = String(currentUserId || "").trim().toLowerCase();
-  
+
   // Primary: Compare by userId if both exist
   if (cUserId && curUserId) {
     return cUserId === curUserId;
   }
-  
+
   // Fallback: Compare by name only if userId is missing on either side
   // Also ignore "Guest" as a valid author for deletion
   if (!cUserId || !curUserId) {
@@ -865,7 +868,7 @@ const isSameUser = (commentUserId, commentAuthor, currentUserId, currentUserName
     const curName = (currentUserName || "").trim().toLowerCase();
     return cAuthor && curName && cAuthor === curName && curName !== "guest";
   }
-  
+
   return false;
 };
 
@@ -883,28 +886,28 @@ const createComment = (content, author = "Guest", userId = null, parentId = null
 });
 
 // ── Recursive Comment Component ──
-const CommentItem = ({ 
-  comment, 
-  onLike, 
+const CommentItem = ({
+  comment,
+  onLike,
   onDelete,
-  replyingTo, 
-  setReplyingTo, 
-  replyContent, 
-  setReplyContent, 
-  handleSubmitReply, 
+  replyingTo,
+  setReplyingTo,
+  replyContent,
+  setReplyContent,
+  handleSubmitReply,
   submitting,
   currentUserId,
   currentUserName,
   isLoggedIn,
-  depth = 0 
+  depth = 0
 }) => {
   const isReplying = replyingTo === comment._id;
-  
+
   // ✅ Use robust userId-based authorization with name fallback
   const isAuthor = isSameUser(
-    comment.userId, 
-    comment.author, 
-    currentUserId, 
+    comment.userId,
+    comment.author,
+    currentUserId,
     currentUserName
   );
 
@@ -919,15 +922,15 @@ const CommentItem = ({
         <span className="comment-author">{comment.author}</span>
         <span className="comment-date">{formatDate(comment.createdAt)}</span>
       </div>
-      
+
       <div className="comment-body" style={{ paddingLeft: depth === 0 ? "54px" : 0 }}>
         {comment.content}
       </div>
-      
+
       <div className="comment-actions" style={{ paddingLeft: depth === 0 ? "54px" : 0 }}>
         {/* Reply Button - only for logged in users */}
         {isLoggedIn && (
-          <button 
+          <button
             className="comment-action"
             onClick={() => setReplyingTo(isReplying ? null : comment._id)}
             aria-label={isReplying ? "Cancel reply" : `Reply to ${comment.author}`}
@@ -936,10 +939,10 @@ const CommentItem = ({
             ↩ {isReplying ? "Cancel" : "Reply"}
           </button>
         )}
-        
+
         {/* Like Button - only for logged in users */}
         {isLoggedIn && (
-          <button 
+          <button
             className={`comment-action ${hasLiked ? 'liked' : ''}`}
             onClick={() => onLike(comment._id)}
             aria-label={hasLiked ? "Unlike comment" : "Like comment"}
@@ -948,10 +951,10 @@ const CommentItem = ({
             👍 {typeof comment.likes === 'number' ? comment.likes : 0}
           </button>
         )}
-        
+
         {/* Delete Button - Shows for comment author only */}
         {isAuthor && (
-          <button 
+          <button
             className="comment-action delete-btn"
             onClick={() => onDelete(comment._id, depth > 0)}
             aria-label="Delete comment"
@@ -964,11 +967,11 @@ const CommentItem = ({
 
       {/* Reply Form */}
       {isReplying && (
-        <form 
+        <form
           className="comment-form reply-form"
-          onSubmit={(e) => { 
-            e.preventDefault(); 
-            handleSubmitReply(comment._id, depth + 1); 
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmitReply(comment._id, depth + 1);
           }}
           style={{ marginLeft: depth > 0 ? `${depth * 28}px` : "var(--reply-indent)" }}
         >
@@ -981,12 +984,12 @@ const CommentItem = ({
             aria-label="Reply content"
           />
           <div className="form-actions">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="btn-cancel"
-              onClick={() => { 
-                setReplyingTo(null); 
-                setReplyContent(prev => ({ ...prev, [comment._id]: "" })); 
+              onClick={() => {
+                setReplyingTo(null);
+                setReplyContent(prev => ({ ...prev, [comment._id]: "" }));
               }}
             >
               Cancel
@@ -1030,7 +1033,7 @@ export default function PostDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  
+
   const currentUserId = localStorage.getItem("userId") || "guest-user";
   const currentUserName = localStorage.getItem("userName") || "Guest";
 
@@ -1038,7 +1041,7 @@ export default function PostDetail() {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   const [isPostAuthor, setIsPostAuthor] = useState(false);
 
   const [newComment, setNewComment] = useState({ content: "" });
@@ -1094,7 +1097,7 @@ export default function PostDetail() {
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
-      
+
       try {
         const [postRes, commentsRes] = await Promise.all([
           axios.get(`http://localhost:8001/post/${id}`),
@@ -1107,12 +1110,12 @@ export default function PostDetail() {
           const postData = postRes.data;
           if (!postData.likes) postData.likes = [];
           setPost(postData);
-          
+
           // Check if current user is the post author
           const postAuthorId = String(postRes.data.author?._id || postRes.data.author || "");
           const currentId = String(currentUserId);
           setIsPostAuthor(postAuthorId && currentId && postAuthorId === currentId);
-          
+
           // ✅ Format comments to preserve userId and normalize data
           const formatComments = (cmts) => cmts.map(cmt => ({
             ...cmt,
@@ -1163,7 +1166,7 @@ export default function PostDetail() {
         likedBy: Array.isArray(res.data.likedBy) ? res.data.likedBy.map(String) : [],
         replies: []
       } : createComment(newComment.content, currentUserName, currentUserId, null);
-      
+
       setComments(prev => [newCmt, ...prev]);
       setNewComment({ content: "" });
     } catch (err) {
@@ -1203,11 +1206,11 @@ export default function PostDetail() {
         likedBy: Array.isArray(res.data.likedBy) ? res.data.likedBy.map(String) : [],
         replies: []
       } : createComment(content, payload.author, currentUserId, parentId);
-      
+
       setComments(prev => addReplyToTree(prev, parentId, newReply));
       setReplyContent(prev => ({ ...prev, [parentId]: "" }));
       setReplyingTo(null);
-      
+
     } catch (err) {
       console.error("Reply error:", err);
       const localReply = createComment(content, currentUserName || "Guest", currentUserId, parentId);
@@ -1263,21 +1266,21 @@ export default function PostDetail() {
   // ── Handle Like/Unlike ──
   const handleLikeComment = async (commentId) => {
     const userIdStr = String(currentUserId);
-    
+
     const comment = findCommentInTree(comments, commentId);
     if (!comment) return;
-    
-    const currentLikedBy = Array.isArray(comment.likedBy) 
-      ? comment.likedBy.map(String) 
+
+    const currentLikedBy = Array.isArray(comment.likedBy)
+      ? comment.likedBy.map(String)
       : [];
     const currentlyLiked = currentLikedBy.includes(userIdStr);
     const currentLikes = typeof comment.likes === 'number' ? comment.likes : 0;
-  
+
     setComments(prev => updateCommentInTree(prev, commentId, (cmt) => {
       const likedBy = Array.isArray(cmt.likedBy) ? cmt.likedBy.map(String) : [];
       return {
         ...cmt,
-        likes: currentlyLiked 
+        likes: currentlyLiked
           ? Math.max(0, (typeof cmt.likes === 'number' ? cmt.likes : 0) - 1)
           : (typeof cmt.likes === 'number' ? cmt.likes : 0) + 1,
         likedBy: currentlyLiked
@@ -1285,13 +1288,13 @@ export default function PostDetail() {
           : [...likedBy, userIdStr]
       };
     }));
-  
+
     try {
       await axios.post(
         `http://localhost:8001/post/comments/${commentId}/like`,
-        { 
-          userId: currentUserId, 
-          action: currentlyLiked ? 'unlike' : 'like' 
+        {
+          userId: currentUserId,
+          action: currentlyLiked ? 'unlike' : 'like'
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -1301,7 +1304,7 @@ export default function PostDetail() {
         const likedBy = Array.isArray(cmt.likedBy) ? cmt.likedBy.map(String) : [];
         return {
           ...cmt,
-          likes: currentlyLiked 
+          likes: currentlyLiked
             ? (typeof cmt.likes === 'number' ? cmt.likes : 0) + 1
             : Math.max(0, (typeof cmt.likes === 'number' ? cmt.likes : 0) - 1),
           likedBy: currentlyLiked
@@ -1319,13 +1322,13 @@ export default function PostDetail() {
     }
 
     try {
-        await axios({
-            method: "DELETE",
-            url: `http://localhost:8001/post/comments/${commentId}`,
-            headers: { Authorization: `Bearer ${token}` },
-            data: { userId: currentUserId },
-          });
-      
+      await axios({
+        method: "DELETE",
+        url: `http://localhost:8001/post/comments/${commentId}`,
+        headers: { Authorization: `Bearer ${token}` },
+        data: { userId: currentUserId },
+      });
+
       setComments(prev => removeCommentFromTree(prev, commentId));
     } catch (err) {
       console.error("Delete error:", err);
@@ -1409,7 +1412,7 @@ export default function PostDetail() {
   return (
     <>
       <style>{postDetailStyle}</style>
-      
+
       {/* Animated Background */}
       <div className="bg-canvas">
         <div className="blob blob-1" /><div className="blob blob-2" />
@@ -1441,9 +1444,9 @@ export default function PostDetail() {
                     <span className="post-tag">Essay</span>
                   )}
                 </div>
-                
+
                 <h1 className="post-title" style={{ fontSize: '56px', marginBottom: '16px' }}>{post.title}</h1>
-                
+
                 <div className="post-meta">
                   <div className="post-meta-main">
                     <span className="post-author-name">By <strong>{post.author?.name || "Anonymous"}</strong></span>
@@ -1452,9 +1455,9 @@ export default function PostDetail() {
                     <span className="meta-dot">·</span>
                     <span>{wordCount(post.content)} min read</span>
                   </div>
-                  
+
                   <div className="post-actions-meta">
-                    <button 
+                    <button
                       className={`btn-like-post ${post.likes?.some(uid => String(uid) === String(currentUserId)) ? 'liked' : ''}`}
                       onClick={handleLikePost}
                       title="Like this post"
@@ -1463,7 +1466,7 @@ export default function PostDetail() {
                     </button>
 
                     {isPostAuthor && (
-                      <button 
+                      <button
                         className="btn-delete-post"
                         onClick={handleDeletePost}
                         type="button"
@@ -1477,10 +1480,10 @@ export default function PostDetail() {
 
               {/* ── FIXED IMAGE SECTION ── */}
               {post.image ? (
-                <img 
-                  src={getImageSrc(post.image)} 
-                  alt={post.title} 
-                  className="post-image" 
+                <img
+                  src={getImageSrc(post.image)}
+                  alt={post.title}
+                  className="post-image"
                   style={{ marginBottom: '48px' }}
                   onError={(e) => {
                     // if image fails to load, show placeholder
@@ -1500,9 +1503,9 @@ export default function PostDetail() {
               )}
 
               <div className="post-intel" style={{ border: 'none', borderBottom: '1px solid var(--border)', paddingBottom: '20px', marginBottom: '40px' }}>
-                <h2 className="post-content-title" style={{ 
-                  fontFamily: 'Cormorant Garamond, serif', 
-                  fontSize: '28px', 
+                <h2 className="post-content-title" style={{
+                  fontFamily: 'Cormorant Garamond, serif',
+                  fontSize: '28px',
                   fontStyle: 'italic',
                   fontWeight: 500,
                   color: 'var(--ink)',
@@ -1519,7 +1522,7 @@ export default function PostDetail() {
             <section className="comments-section">
               <div className="community-header">
                 <h2 className="comments-title" style={{ margin: 0 }}>
-                  Community Discussion <span style={{color:'var(--muted)',fontWeight:400,fontSize:'16px'}}>({comments.length})</span>
+                  Community Discussion <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '16px' }}>({comments.length})</span>
                 </h2>
               </div>
 
@@ -1532,7 +1535,7 @@ export default function PostDetail() {
                     className="form-textarea"
                     placeholder="Share your thoughts..."
                     value={newComment.content}
-                    onChange={(e) => setNewComment({...newComment, content: e.target.value})}
+                    onChange={(e) => setNewComment({ ...newComment, content: e.target.value })}
                     required
                     aria-label="Comment content"
                   />

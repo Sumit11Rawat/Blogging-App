@@ -9,6 +9,7 @@ const MainLayout = () => {
     <div>
       <Navbar />
 
+      {/* ✅ Toast container here */}
       <ToastContainer
         position="top-right"
         autoClose={2000}
