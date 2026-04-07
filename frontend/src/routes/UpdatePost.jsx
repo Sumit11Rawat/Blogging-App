@@ -46,6 +46,103 @@ const style = `
   .field-textarea:not(:placeholder-shown) + .field-label { top: -8px; font-size: 11px; color: #B22222; }
   .field-select + .field-label { top: -8px; font-size: 11px; color: #B22222; }
   .field-textarea { min-height: 120px; resize: vertical; }
+
+  /* ── Image Selector ── */
+  .img-section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 10px;
+  }
+  .img-mode-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 14px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1.5px solid #e5e7eb;
+  }
+  .img-mode-btn {
+    flex: 1;
+    padding: 10px 0;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fafafa;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .img-mode-btn.active {
+    background: linear-gradient(135deg, #B22222, #8b0000);
+    color: #fff;
+  }
+  .img-mode-btn:not(.active):hover {
+    background: #f3f4f6;
+    color: #111827;
+  }
+  .img-preview-box {
+    border: 1.5px dashed #e5e7eb;
+    border-radius: 10px;
+    padding: 14px;
+    background: #fafafa;
+    margin-bottom: 14px;
+  }
+  .img-preview-box.has-img {
+    border-color: #B22222;
+    border-style: solid;
+    background: #fff;
+  }
+  .img-preview-thumb {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  .img-preview-name {
+    font-size: 12px;
+    color: #6b7280;
+    word-break: break-all;
+  }
+  .img-empty {
+    text-align: center;
+    padding: 18px 0;
+    color: #9ca3af;
+    font-size: 13px;
+  }
+  .img-empty-icon { font-size: 28px; margin-bottom: 6px; }
+  .img-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+  .img-action-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #6b7280;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .img-action-btn:hover { background: #f3f4f6; }
+  .img-action-btn.danger { color: #dc2626; border-color: #fecaca; }
+  .img-action-btn.danger:hover { background: #fef2f2; }
+  .file-input-hidden { display: none; }
+
   .feedback-msg { padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
   .feedback-msg.success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
   .feedback-msg.error   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
@@ -59,6 +156,15 @@ const style = `
   @keyframes spin { to { transform: rotate(360deg); } }
 `;
 
+// Helper to resolve image src for preview
+const resolveImageSrc = (image) => {
+  if (!image) return null;
+  if (image.startsWith("http://") || image.startsWith("https://") || image.startsWith("data:")) {
+    return image;
+  }
+  return `http://localhost:8001${image.startsWith("/") ? image : "/" + image}`;
+};
+
 const EditPost = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -70,6 +176,13 @@ const EditPost = () => {
     tags: "",
     status: "draft",
   });
+
+  // Image state
+  const [imageMode, setImageMode] = useState("url"); // "url" or "file"
+  const [imageUrl, setImageUrl] = useState("");       // URL text input
+  const [imageFile, setImageFile] = useState(null);   // File object
+  const [existingImage, setExistingImage] = useState(""); // original image from DB
+
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -83,11 +196,23 @@ const EditPost = () => {
         });
         const data = res.data;
         setPost({
-          title:   data.title || "",
+          title: data.title || "",
           content: data.content || "",
-          tags:    data.tags?.join(", ") || "",
-          status:  data.status || "draft",
+          tags: data.tags?.join(", ") || "",
+          status: data.status || "draft",
         });
+
+        // Set existing image
+        const img = data.image || "";
+        setExistingImage(img);
+        if (img) {
+          if (img.startsWith("/uploads")) {
+            setImageMode("file");
+          } else {
+            setImageMode("url");
+            setImageUrl(img);
+          }
+        }
       } catch (err) {
         console.error("Fetch error:", err.response?.data || err.message);
         setMessage({ type: "error", text: "Failed to load post." });
@@ -98,26 +223,82 @@ const EditPost = () => {
     fetchPost();
   }, [id, token]);
 
+  // ── Handle file selection ──
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setMessage({ type: "error", text: "Please select a valid image file." });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: "error", text: "Image must be less than 5MB." });
+      return;
+    }
+    setImageFile(file);
+    setMessage({ type: "", text: "" });
+  };
+
+  // ── Remove image ──
+  const handleRemoveImage = () => {
+    setImageUrl("");
+    setImageFile(null);
+    setExistingImage("");
+  };
+
+  // ── Determine current preview image ──
+  const getPreviewSrc = () => {
+    if (imageMode === "file" && imageFile) {
+      return URL.createObjectURL(imageFile);
+    }
+    if (imageMode === "url" && imageUrl) {
+      return resolveImageSrc(imageUrl);
+    }
+    // Fallback to existing image from DB if nothing new was set
+    if (existingImage && imageMode === "file") {
+      return resolveImageSrc(existingImage);
+    }
+    return null;
+  };
+
+  const hasImage = () => {
+    if (imageMode === "url") return !!imageUrl;
+    if (imageMode === "file") return !!(imageFile || (existingImage && existingImage.startsWith("/uploads")));
+    return false;
+  };
+
   // ── Update post ──
   const handleUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: "", text: "" });
 
-    const payload = {
-      title: post.title,
-      content: post.content,
-      tags: post.tags.split(",").map((t) => t.trim()).filter(Boolean),
-      status: post.status,
-    };
-
-    console.log("Payload to send:", payload);
-
     try {
-      const res = await axios.put(`http://localhost:8001/post/${id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
+      const formData = new FormData();
+      formData.append("title", post.title);
+      formData.append("content", post.content);
+      formData.append("tags", JSON.stringify(post.tags.split(",").map((t) => t.trim()).filter(Boolean)));
+      formData.append("status", post.status);
+
+      // Handle image based on mode
+      if (imageMode === "file" && imageFile) {
+        // New file upload
+        formData.append("image", imageFile);
+      } else if (imageMode === "url" && imageUrl) {
+        // URL input
+        formData.append("imageUrl", imageUrl);
+      } else if (!hasImage()) {
+        // Image was removed
+        formData.append("removeImage", "true");
+      }
+
+      await axios.put(`http://localhost:8001/post/${id}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
       });
-    //   console.log("Update response:", res.data);
+
       setMessage({ type: "success", text: "Post updated successfully!" });
       setTimeout(() => navigate("/dashboard"), 1200);
     } catch (err) {
@@ -130,6 +311,8 @@ const EditPost = () => {
       setLoading(false);
     }
   };
+
+  const previewSrc = getPreviewSrc();
 
   return (
     <>
@@ -203,15 +386,109 @@ const EditPost = () => {
                 <label className="field-label">Tags (comma separated)</label>
               </div>
 
+              {/* ── IMAGE SELECTOR ── */}
+              <div style={{ marginBottom: 18 }}>
+                <div className="img-section-label">Cover Image</div>
+
+                {/* Mode Toggle */}
+                <div className="img-mode-toggle">
+                  <button
+                    type="button"
+                    className={`img-mode-btn ${imageMode === "url" ? "active" : ""}`}
+                    onClick={() => setImageMode("url")}
+                  >
+                    🔗 Image URL
+                  </button>
+                  <button
+                    type="button"
+                    className={`img-mode-btn ${imageMode === "file" ? "active" : ""}`}
+                    onClick={() => setImageMode("file")}
+                  >
+                    📁 Upload File
+                  </button>
+                </div>
+
+                {/* Preview / Input Area */}
+                <div className={`img-preview-box ${hasImage() ? "has-img" : ""}`}>
+                  {/* Image Preview */}
+                  {previewSrc && (
+                    <img
+                      src={previewSrc}
+                      alt="Preview"
+                      className="img-preview-thumb"
+                      onError={(e) => { e.target.style.display = "none"; }}
+                    />
+                  )}
+
+                  {/* URL mode input */}
+                  {imageMode === "url" && (
+                    <input
+                      type="text"
+                      className="field-input"
+                      placeholder="https://example.com/image.jpg"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      style={{ fontSize: 13 }}
+                    />
+                  )}
+
+                  {/* File mode input */}
+                  {imageMode === "file" && (
+                    <>
+                      <input
+                        type="file"
+                        id="edit-image-upload"
+                        className="file-input-hidden"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                      />
+                      {imageFile ? (
+                        <div className="img-preview-name">
+                          📁 {imageFile.name} ({Math.round(imageFile.size / 1024)} KB)
+                        </div>
+                      ) : !existingImage?.startsWith("/uploads") ? (
+                        <div className="img-empty">
+                          <div className="img-empty-icon">📁</div>
+                          <div>Choose a file to upload</div>
+                        </div>
+                      ) : (
+                        <div className="img-preview-name">
+                          📁 Current: {existingImage.split("/").pop()}
+                        </div>
+                      )}
+                      <div style={{ marginTop: 10 }}>
+                        <label
+                          htmlFor="edit-image-upload"
+                          className="img-action-btn"
+                          style={{ cursor: "pointer" }}
+                        >
+                          📁 {imageFile || existingImage?.startsWith("/uploads") ? "Change File" : "Choose File"}
+                        </label>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Remove btn */}
+                  {hasImage() && (
+                    <div className="img-actions">
+                      <button
+                        type="button"
+                        className="img-action-btn danger"
+                        onClick={handleRemoveImage}
+                      >
+                        🗑️ Remove Image
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Status */}
               <div className="field-wrap">
                 <select
                   className="field-select"
                   value={post.status || "draft"}
-                  onChange={(e) => {
-                    console.log("Status selected:", e.target.value);
-                    setPost({ ...post, status: e.target.value });
-                  }}
+                  onChange={(e) => setPost({ ...post, status: e.target.value })}
                   required
                 >
                   <option value="draft">Draft</option>
