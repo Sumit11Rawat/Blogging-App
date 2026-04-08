@@ -113,7 +113,7 @@ const style = `
     transition: transform 0.35s cubic-bezier(.22,.68,0,1.15),
                 box-shadow 0.35s ease,
                 border-color 0.3s ease;
-    cursor: default;
+    cursor: pointer;
   }
   .post-card:nth-child(1) { animation-delay: 0.05s; }
   .post-card:nth-child(2) { animation-delay: 0.12s; }
@@ -467,7 +467,7 @@ const stats = [
           ) : (
             <div className="post-list">
               {posts.map((p, i) => (
-                <div className="post-card" key={p._id}>
+                <div className="post-card" key={p._id} onClick={() => navigate(`/post/${p._id}`)}>
                   {/* Gradient accent bar */}
                   <div className="post-card-accent" />
 
@@ -500,13 +500,13 @@ const stats = [
                     <span className="post-card-spacer" />
                     <button
                       className="btn-update"
-                      onClick={() => navigate(`/edit/${p._id}`)}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/edit/${p._id}`); }}
                     >
                       ✏️ Edit
                     </button>
                     <button
                       className="btn-delete"
-                      onClick={() => handleDelete(p._id)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(p._id); }}
                     >
                       🗑 Delete
                     </button>
