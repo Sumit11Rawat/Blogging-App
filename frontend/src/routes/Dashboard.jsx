@@ -300,7 +300,7 @@ const style = `
   .modal-overlay.entering { animation: overlayIn .28s ease forwards; }
   .modal-overlay.leaving  { animation: overlayOut .22s ease forwards; }
 
-  .modal-card { background: #fff; border-radius: 20px; width: 680px; max-width: 100%; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.10), 0 0 0 1px rgba(255,255,255,.8) inset; }
+  .modal-card { background: #fff; border-radius: 20px; width: 680px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.10), 0 0 0 1px rgba(255,255,255,.8) inset; }
   .modal-card.entering { animation: modalIn .32s cubic-bezier(.34,1.3,.64,1) forwards; }
   .modal-card.leaving  { animation: modalOut .22s ease forwards; }
 
@@ -313,7 +313,7 @@ const style = `
   .modal-header-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
   .modal-header-sub { font-size: 13px; color: rgba(255,255,255,.5); }
 
-  .modal-body { padding: 28px 32px 32px; }
+  .modal-body { padding: 28px 32px 32px; overflow-y: auto; flex: 1; }
   .field-group { display: flex; flex-direction: column; gap: 18px; }
   .field-wrap { position: relative; }
   .field-label { position: absolute; left: 14px; top: 13px; font-size: 13px; color: #9ca3af; pointer-events: none; transition: top .18s, font-size .18s, color .18s; background: #fff; padding: 0 4px; }

@@ -952,8 +952,8 @@ const CommentItem = ({
           </button>
         )}
 
-        {/* Delete Button - Shows for comment author only */}
-        {isAuthor && (
+        {/* Delete Button - Shows for logged-in comment authors only */}
+        {isLoggedIn && isAuthor && (
           <button
             className="comment-action delete-btn"
             onClick={() => onDelete(comment._id, depth > 0)}
@@ -1465,7 +1465,7 @@ export default function PostDetail() {
                       <span className="heart-icon">❤️</span> {post.likes?.length || 0}
                     </button>
 
-                    {isPostAuthor && (
+                    {isLoggedIn && isPostAuthor && (
                       <button
                         className="btn-delete-post"
                         onClick={handleDeletePost}
