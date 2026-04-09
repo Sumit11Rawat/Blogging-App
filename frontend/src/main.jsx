@@ -15,6 +15,7 @@ import ProtectedRoute from './components/ProtectedRoutes.jsx';
 import LogoutPage from './routes/Logout.jsx';
 import EditPost from './routes/UpdatePost.jsx';
 import PostDetail from './routes/Post.jsx';
+import EditProfile from './routes/EditProfile.jsx';
 // import DeletePost from './routes/DeletePost.jsx';
 
 
@@ -68,6 +69,14 @@ const router=createBrowserRouter(
       {
         path: "/post/:id",
         element: <PostDetail />,
+      },
+      {
+        path: "/profile/edit",
+        element: (
+          <ProtectedRoute>
+           <EditProfile />
+          </ProtectedRoute>
+        ),
       },
      
 

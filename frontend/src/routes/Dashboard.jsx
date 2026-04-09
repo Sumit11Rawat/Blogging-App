@@ -1,9 +1,10 @@
 // src/routes/Dashboard.jsx
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import AnimatedModal from "../components/modal/AnimatedModal";
 import CreatePostForm from "../components/modal/CreatePostForm";
+import CropModal from "../components/modal/CropModal";
 
 const style = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -45,31 +46,96 @@ const style = `
     border-radius: 2px;
   }
 
-  .welcome-title {  margin: 0px 0 0px 23px; font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 100; color: #111827; margin-bottom: 4px; }
-  .welcome-sub {margin: 0px 0 0px 23px; font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+  .welcome-title { margin: 0px 0 0px 23px; font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 100; color: #111827; margin-bottom: 4px; }
+  .welcome-sub { margin: 0px 0 0px 23px; font-size: 13px; color: #6b7280; margin-bottom: 12px; }
   .span { font-weight: 700; color: #B22222; }
-  .span1{color: #B22222;}
+  .span1 { color: #B22222; }
 
   /* ── PROFILE STATE BOX ── */
   .profile-state {
     background: #ffffff;
     border-radius: 32px;
     padding: 20px 24px;
-    /* Aligned horizontally with .section, shifted up to sit directly under Dashboard title */
     margin: 0 16px 24px; 
     border: 1px solid rgba(0,0,0,0.05);
     box-shadow: 0 12px 40px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
     gap: 20px;
-    // width: calc(100% - 32px);
-    width:95%
+    width: 95%;
+    position: relative;
   }
+
+  .profile-edit-btn {
+    position: absolute;
+    top: 60%;
+    right: 24px;
+    left: auto;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: rgba(178, 34, 34, 0.06);
+    border: 1px solid rgba(178, 34, 34, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+    transform: translateY(-50%);
+  }
+  .profile-edit-btn:hover {
+    background: rgba(178, 34, 34, 0.12);
+    border-color: rgba(178, 34, 34, 0.3);
+    transform: scale(1.05) translateY(-52%);
+    box-shadow: 0 6px 16px rgba(178, 34, 34, 0.18);
+  }
+  .profile-edit-btn:active { transform: scale(0.95) translateY(-50%); }
+
+  /* ── BACKGROUND IMAGE CONTAINER ── */
+  .profile-bg-container {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    border-radius: 24px 24px 0 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    margin: -20px -24px 0 -24px;
+    cursor: pointer;
+  }
+
+  .profile-bg-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .profile-bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .profile-bg-container:hover .profile-bg-overlay { opacity: 1; }
+  .profile-bg-container:hover .profile-bg-image { transform: scale(1.03); }
 
   .profile-header {
     display: flex;
     align-items: center;
     gap: 16px;
+    margin-top: -40px;
+    position: relative;
+    z-index: 2;
   }
 
   .avatar-container {
@@ -79,7 +145,7 @@ const style = `
     border-radius: 50%;
     overflow: hidden;
     background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-    border: 2px solid #fff;
+    border: 3px solid #fff;
     box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     cursor: pointer;
     flex-shrink: 0;
@@ -116,9 +182,7 @@ const style = `
     font-size: 18px;
   }
 
-  .avatar-container:hover .avatar-overlay {
-    opacity: 1;
-  }
+  .avatar-container:hover .avatar-overlay { opacity: 1; }
 
   .user-info-dash {
     display: flex;
@@ -131,7 +195,7 @@ const style = `
     font-family: 'Playfair Display', serif;
     font-size: 18px;
     font-weight: 700;
-    color: #111827;
+    color: #B22222;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -139,7 +203,6 @@ const style = `
 
   .dash-user-email {
     font-size: 12px;
-    color: #6b7280;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -152,7 +215,6 @@ const style = `
     flex-wrap: wrap; 
     padding-top: 18px;
     border-top: 1px solid rgba(0,0,0,0.04);
-    
   }
 
   .stat-card { 
@@ -185,10 +247,7 @@ const style = `
     flex-shrink: 0;
   }
   
-  .stat-content {
-    display: flex;
-    flex-direction: column;
-  }
+  .stat-content { display: flex; flex-direction: column; }
 
   .stat-label { 
     font-size: 9px; 
@@ -232,9 +291,7 @@ const style = `
     box-shadow: 0 12px 40px rgba(93,64,55,0.15);
     border-color: #8b0000;
   }
-  .section:hover::before {
-    opacity: 1;
-  }
+  .section:hover::before { opacity: 1; }
 
   .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
   .section-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: #111827; }
@@ -432,6 +489,10 @@ const style = `
     .post-list { grid-template-columns: 1fr; }
     .profile-state { margin: 0 8px 20px; padding: 16px 18px; }
     .section { margin: 0 8px 24px; padding: 24px; }
+    .profile-edit-btn { top: 16px; right: 18px; width: 34px; height: 34px; font-size: 14px; }
+    .profile-bg-container { height: 100px; margin: -16px -18px 0 -18px; }
+    .profile-header { margin-top: -32px; }
+    .avatar-container { width: 56px; height: 56px; }
   }
 
   @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
@@ -495,12 +556,20 @@ const Dashboard = () => {
   const [posts, setPosts] = useState([]);
   const navigate = useNavigate();
   const [showCreate, setShowCreate] = useState(false);
-  const [showUpdate, setShowUpdate] = useState(false);
-  const [currentPost, setCurrentPost] = useState(null);
 
+  // Image upload states
   const [uploading, setUploading] = useState(false);
+  const [uploadingBg, setUploadingBg] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewBgUrl, setPreviewBgUrl] = useState(null);
+  
+  // Crop modal states
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [cropType, setCropType] = useState('profile'); // 'profile' or 'background'
+  const [originalFile, setOriginalFile] = useState(null);
+
   const fileInputRef = useRef(null);
+  const bgInputRef = useRef(null);
 
   const fetchData = async () => {
     const token = localStorage.getItem("token");
@@ -515,6 +584,9 @@ const Dashboard = () => {
       if (res.data.user?.profilePic) {
         setPreviewUrl(`http://localhost:8001${res.data.user.profilePic}`);
       }
+      if (res.data.user?.backgroundImage) {
+        setPreviewBgUrl(`http://localhost:8001${res.data.user.backgroundImage}`);
+      }
     } catch (err) {
       console.error(err.response?.data || err.message);
       localStorage.removeItem("token");
@@ -525,37 +597,92 @@ const Dashboard = () => {
   useEffect(() => {
     fetchData();
   }, []);
-  
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
+
+  // Cleanup blob URLs to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+      if (previewBgUrl?.startsWith('blob:')) URL.revokeObjectURL(previewBgUrl);
+      if (cropImageSrc?.startsWith('blob:')) URL.revokeObjectURL(cropImageSrc);
+    };
+  }, [previewUrl, previewBgUrl, cropImageSrc]);
+
+  // Handle file selection for both profile and background
+  const handleFileSelect = useCallback((e, type) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size should be less than 5MB.');
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onloadend = () => setPreviewUrl(reader.result);
+    reader.onloadend = () => {
+      setOriginalFile(file);
+      setCropType(type);
+      setCropImageSrc(reader.result);
+    };
+    reader.onerror = () => alert('Failed to read image. Please try again.');
     reader.readAsDataURL(file);
+    e.target.value = "";
+  }, []);
+
+  // Handle crop completion and upload
+  const handleCropComplete = useCallback(async (croppedBlob, croppedUrl) => {
+    const type = cropType;
+    setCropImageSrc(null);
+    
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
     const formData = new FormData();
-    formData.append("profilePic", file);
-    const token = localStorage.getItem("token");
+    const fieldName = type === 'profile' ? 'profilePic' : 'backgroundImage';
+    const previewSetter = type === 'profile' ? setPreviewUrl : setPreviewBgUrl;
+    const uploadingSetter = type === 'profile' ? setUploading : setUploadingBg;
+    
+    formData.append(fieldName, croppedBlob, `${fieldName}-${Date.now()}.jpg`);
 
     try {
-        setUploading(true);
-        const res = await axios.post("http://localhost:8001/auth/profile-pic", formData, {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data" 
-          },
-        });
-        alert("Profile picture updated!");
-        setUser(prev => ({ ...prev, profilePic: res.data.profilePic }));
-      } catch (err) {
-        console.error("Upload error:", err);
-        alert("Failed to upload image.");
-      } finally {
-        setUploading(false);
+      uploadingSetter(true);
+      previewSetter(croppedUrl); // Show preview immediately
+      
+      const res = await axios.post(`http://localhost:8001/auth/${fieldName}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data"
+        },
+      });
+      
+      alert(`✅ ${type === 'profile' ? 'Profile picture' : 'Cover photo'} updated!`);
+      setUser(prev => ({ ...prev, [fieldName]: res.data[fieldName] }));
+    } catch (err) {
+      console.error("Upload error:", err.response?.data || err.message);
+      alert(`❌ Failed to upload ${type}. Please try again.`);
+      // Revert preview on error
+      if (type === 'profile' && user?.profilePic) {
+        setPreviewUrl(`http://localhost:8001${user.profilePic}`);
+      } else if (type === 'background' && user?.backgroundImage) {
+        setPreviewBgUrl(`http://localhost:8001${user.backgroundImage}`);
+      } else {
+        previewSetter(null);
       }
-    };
-  
+    } finally {
+      uploadingSetter(false);
+      setOriginalFile(null);
+      setTimeout(() => {
+        if (croppedUrl?.startsWith('blob:')) URL.revokeObjectURL(croppedUrl);
+      }, 1000);
+    }
+  }, [cropType, navigate, user?.profilePic, user?.backgroundImage]);
+
   if (!user) return <div style={{ padding: "50px", textAlign: "center" }}>Loading…</div>;
 
   const stats = [
@@ -573,7 +700,8 @@ const Dashboard = () => {
       });
       setPosts((prev) => prev.filter((p) => p._id !== id));
     } catch (err) {
-      console.log("DELETE ERROR:", err);
+      console.log("DELETE ERROR:", err.response?.data || err.message);
+      alert("Failed to delete post. Please try again.");
     }
   };
 
@@ -590,25 +718,95 @@ const Dashboard = () => {
             <span className="span1">{user?.email || "No email"}</span> · Here's your content overview
           </div>
         </div>
-        
+
         <div className="profile-state">
+          {/* ✏️ Top-Right Edit Button */}
+          <button
+            className="profile-edit-btn"
+            onClick={() => navigate("/profile/edit")}
+            aria-label="Edit profile details"
+            title="Edit profile"
+          >
+            ✏️
+          </button>
+
+          {/* 🖼️ Background Image Section */}
+          <div 
+            className="profile-bg-container"
+            onClick={() => bgInputRef.current?.click()}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                bgInputRef.current?.click();
+              }
+            }}
+            aria-label="Change cover photo"
+          >
+            {previewBgUrl || user?.backgroundImage ? (
+              <img 
+                src={previewBgUrl ? previewBgUrl : `http://localhost:8001${user.backgroundImage}`} 
+                className="profile-bg-image" 
+                alt="Background" 
+              />
+            ) : (
+              <div style={{ 
+                width: "100%", 
+                height: "100%", 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center",
+                color: "#9ca3af",
+                fontSize: "13px"
+              }}>
+                + Add Cover Photo
+              </div>
+            )}
+            <div className="profile-bg-overlay">
+              {uploadingBg ? "⏳" : "📸 Change Cover"}
+            </div>
+            <input
+              type="file"
+              ref={bgInputRef}
+              onChange={(e) => handleFileSelect(e, 'background')}
+              className="hidden"
+              style={{ display: "none" }}
+              accept="image/*"
+              aria-hidden="true"
+            />
+          </div>
+
           <div className="profile-header">
-            <div className="avatar-container" onClick={() => fileInputRef.current.click()}>
+            <div 
+              className="avatar-container" 
+              onClick={() => fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
+              aria-label="Change profile picture"
+            >
               {previewUrl ? (
                 <img src={previewUrl} className="avatar-img" alt="Profile" />
               ) : (
                 <div className="avatar-initials">{initials(user?.name)}</div>
               )}
               <div className="avatar-overlay">
-                {uploading ? "..." : "📸"}
+                {uploading ? "⏳" : "📸 Crop"}
               </div>
               <input
                 type="file"
                 ref={fileInputRef}
-                onChange={handleFileChange}
+                onChange={(e) => handleFileSelect(e, 'profile')}
                 className="hidden"
                 style={{ display: "none" }}
                 accept="image/*"
+                aria-hidden="true"
               />
             </div>
             <div className="user-info-dash">
@@ -640,6 +838,18 @@ const Dashboard = () => {
               borderRadius: "8px",
               border: "none",
               cursor: "pointer",
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: "14px",
+              fontWeight: "500",
+              transition: "transform 0.2s, box-shadow 0.2s"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 6px 20px rgba(17,24,39,.25)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "none";
             }}
           >
             + Create Post
@@ -704,6 +914,7 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Create Post Modal */}
       {showCreate && (
         <AnimatedModal onClose={() => setShowCreate(false)}>
           {({ close }) => (
@@ -713,6 +924,21 @@ const Dashboard = () => {
             />
           )}
         </AnimatedModal>
+      )}
+
+      {/* 🔥 Crop Modal */}
+      {cropImageSrc && (
+        <CropModal
+          imageSrc={cropImageSrc}
+          aspect={cropType === 'profile' ? 1 : 16/9}
+          cropShape={cropType === 'profile' ? 'round' : 'rect'}
+          title={cropType === 'profile' ? 'Adjust Profile Picture' : 'Adjust Cover Photo'}
+          onClose={() => {
+            setCropImageSrc(null);
+            setOriginalFile(null);
+          }}
+          onCropComplete={handleCropComplete}
+        />
       )}
     </>
   );

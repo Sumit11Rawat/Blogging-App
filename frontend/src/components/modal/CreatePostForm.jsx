@@ -168,7 +168,7 @@ const CreatePostForm = ({ onClose, onPostCreated }) => {
           {/* ── IMAGE SECTION ── */}
           <div style={{ marginBottom: 18 }}>
             <div className="img-section-label">Cover Image</div>
-            
+
             <div className="img-mode-toggle">
               <button
                 type="button"
@@ -188,9 +188,9 @@ const CreatePostForm = ({ onClose, onPostCreated }) => {
 
             <div className={`img-preview-box ${hasImage() ? "has-img" : ""}`}>
               {previewSrc && (
-                <img src={previewSrc} alt="Preview" className="img-preview-thumb" onError={(e) => e.target.style.display="none"} />
+                <img src={previewSrc} alt="Preview" className="img-preview-thumb" onError={(e) => e.target.style.display = "none"} />
               )}
-              
+
               {imageMode === "url" ? (
                 <input
                   className="field-input"

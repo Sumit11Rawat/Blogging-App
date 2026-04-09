@@ -14,7 +14,7 @@ const AnimatedModal = ({ onClose, children }) => {
       onMouseDown={(e) => e.target === e.currentTarget && close()}
     >
       <div className={`modal-card ${phase}`}>
-        
+
         {/* Header */}
         <div className="modal-header">
           <button className="modal-close-btn" onClick={close}>✕</button>
