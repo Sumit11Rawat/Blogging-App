@@ -25,7 +25,7 @@ const style = `
     font-size: 40px; 
     font-weight: 700; 
     color: #111827; 
-    margin: -4px 0 6px 0;
+    margin: -20px 0 6px 23px;
     letter-spacing: -0.03em;
     background: linear-gradient(135deg, #111827 0%, #5d4037 50%, #8b0000 100%);
     -webkit-background-clip: text;
@@ -45,16 +45,164 @@ const style = `
     border-radius: 2px;
   }
 
-  .welcome-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 100; color: #111827; margin-bottom: 6px; }
-  .welcome-sub { font-size: 13px; color: #6b7280; margin-bottom: 24px; }
+  .welcome-title {  margin: 0px 0 0px 23px; font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 100; color: #111827; margin-bottom: 4px; }
+  .welcome-sub {margin: 0px 0 0px 23px; font-size: 13px; color: #6b7280; margin-bottom: 12px; }
   .span { font-weight: 700; color: #B22222; }
   .span1{color: #B22222;}
-  .stats-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 36px; }
-  .stat-card { background: #fff; flex: 1; min-width: 160px; border-radius: 14px; padding: 20px; border: 1px solid #e5e7eb; box-shadow: 0 3px 10px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: flex-start; }
-  .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,0.08); }
-  .stat-icon { width: 38px; height: 38px; display: flex; justify-content: center; align-items: center; font-size: 18px; margin-bottom: 10px; border-radius: 10px; }
-  .stat-label { font-size: 11px; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: .05em; }
-  .stat-value { font-size: 26px; font-weight: 600; color: #111827; margin-top: 4px; }
+
+  /* ── PROFILE STATE BOX ── */
+  .profile-state {
+    background: #ffffff;
+    border-radius: 32px;
+    padding: 20px 24px;
+    /* Aligned horizontally with .section, shifted up to sit directly under Dashboard title */
+    margin: 0 16px 24px; 
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    // width: calc(100% - 32px);
+    width:95%
+  }
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .avatar-container {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    border: 2px solid #fff;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-initials {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #6b7280;
+    background: #f3f4f6;
+  }
+
+  .avatar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: 0.2s;
+    color: #fff;
+    font-size: 18px;
+  }
+
+  .avatar-container:hover .avatar-overlay {
+    opacity: 1;
+  }
+
+  .user-info-dash {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .dash-user-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dash-user-email {
+    font-size: 12px;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── COMPACT STATS ── */
+  .stats-row { 
+    display: flex; 
+    gap: 14px; 
+    flex-wrap: wrap; 
+    padding-top: 18px;
+    border-top: 1px solid rgba(0,0,0,0.04);
+    
+  }
+
+  .stat-card { 
+    background: #f9fafb; 
+    flex: 1; 
+    min-width: 120px; 
+    border-radius: 20px;
+    padding: 14px 16px; 
+    border: 1px solid rgba(0,0,0,0.03); 
+    transition: 0.2s; 
+    display: flex; 
+    align-items: center;
+    gap: 12px;
+  }
+  .stat-card:hover { 
+    background: #fff;
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+    border-color: rgba(178,34,34,0.2);
+  }
+
+  .stat-icon { 
+    width: 30px; 
+    height: 30px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    font-size: 14px; 
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+  
+  .stat-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stat-label { 
+    font-size: 9px; 
+    font-weight: 700; 
+    color: #9ca3af; 
+    text-transform: uppercase; 
+    letter-spacing: .05em; 
+  }
+
+  .stat-value { 
+    font-size: 18px; 
+    font-weight: 700; 
+    color: #111827; 
+  }
 
   /* ✨ Section hover effect ✨ */
   .section { 
@@ -66,6 +214,7 @@ const style = `
     box-shadow: 0 4px 16px rgba(93,64,55,0.06);
     position: relative;
     overflow: hidden;
+    margin: 0 16px 24px;
   }
   .section::before {
     content: '';
@@ -128,14 +277,12 @@ const style = `
     border-color: rgba(178,34,34,0.35);
   }
 
-  /* gradient accent on top */
   .post-card-accent {
     height: 4px;
     background: linear-gradient(90deg, #B22222 0%, #ff6b6b 40%, #c9a84c 100%);
     flex-shrink: 0;
   }
-
-  /* card body */
+ 
   .post-card-body {
     padding: 22px 24px 16px;
     flex: 1;
@@ -143,7 +290,6 @@ const style = `
     flex-direction: column;
   }
 
-  /* top row: number + title */
   .post-card-top {
     display: flex;
     align-items: flex-start;
@@ -176,7 +322,6 @@ const style = `
     overflow: hidden;
   }
 
-  /* content preview: single line */
   .post-card-content {
     font-size: 13.5px;
     color: #6b7280;
@@ -189,7 +334,6 @@ const style = `
     flex: 1;
   }
 
-  /* tags row */
   .post-card-tags {
     display: flex;
     flex-wrap: wrap;
@@ -210,7 +354,6 @@ const style = `
     background: rgba(178,34,34,0.12);
   }
 
-  /* bottom action bar */
   .post-card-footer {
     display: flex;
     align-items: center;
@@ -287,6 +430,8 @@ const style = `
 
   @media (max-width: 700px) {
     .post-list { grid-template-columns: 1fr; }
+    .profile-state { margin: 0 8px 20px; padding: 16px 18px; }
+    .section { margin: 0 8px 24px; padding: 24px; }
   }
 
   @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
@@ -353,6 +498,10 @@ const Dashboard = () => {
   const [showUpdate, setShowUpdate] = useState(false);
   const [currentPost, setCurrentPost] = useState(null);
 
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const fileInputRef = useRef(null);
+
   const fetchData = async () => {
     const token = localStorage.getItem("token");
     if (!token) return navigate("/login");
@@ -362,6 +511,10 @@ const Dashboard = () => {
       });
       setUser(res.data.user || {});
       setPosts(res.data.posts || []);
+
+      if (res.data.user?.profilePic) {
+        setPreviewUrl(`http://localhost:8001${res.data.user.profilePic}`);
+      }
     } catch (err) {
       console.error(err.response?.data || err.message);
       localStorage.removeItem("token");
@@ -372,43 +525,57 @@ const Dashboard = () => {
   useEffect(() => {
     fetchData();
   }, []);
+  
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
+    const reader = new FileReader();
+    reader.onloadend = () => setPreviewUrl(reader.result);
+    reader.readAsDataURL(file);
+
+    const formData = new FormData();
+    formData.append("profilePic", file);
+    const token = localStorage.getItem("token");
+
+    try {
+        setUploading(true);
+        const res = await axios.post("http://localhost:8001/auth/profile-pic", formData, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data" 
+          },
+        });
+        alert("Profile picture updated!");
+        setUser(prev => ({ ...prev, profilePic: res.data.profilePic }));
+      } catch (err) {
+        console.error("Upload error:", err);
+        alert("Failed to upload image.");
+      } finally {
+        setUploading(false);
+      }
+    };
+  
   if (!user) return <div style={{ padding: "50px", textAlign: "center" }}>Loading…</div>;
 
-const stats = [
-  { icon: "📝", bg: "#ecfdf5", label: "Total Posts", value: posts.length },
-  { icon: "✅", bg: "#eff6ff", label: "Published",   value: posts.filter(p => p.status === "published").length },
-  { icon: "📬", bg: "#fdf4ff", label: "Drafts",      value: posts.filter(p => p.status === "draft").length },
-];
+  const stats = [
+    { icon: "📝", bg: "#ecfdf5", label: "Total Posts", value: posts.length },
+    { icon: "✅", bg: "#eff6ff", label: "Published", value: posts.filter(p => p.status === "published").length },
+    { icon: "📬", bg: "#fdf4ff", label: "Drafts", value: posts.filter(p => p.status === "draft").length },
+  ];
 
- 
-
-    const handleDelete = async (id) => {
-        // console.log(id);
-        const token = localStorage.getItem("token");
-      
-        if (!window.confirm("Are you sure you want to delete this post?")) return;
-    //   console.log(token);
-        try {
-            console.log("found token")
-            const res = await axios.delete(`http://localhost:8001/post/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-        //   console.log("res:", res)
-        
-          // remove deleted post from UI instantly
-          setPosts((prev) => prev.filter((p) => p._id !== id));
-      
-        } catch (err) {
-            console.log("DELETE ERROR:", err);
-            console.log("RESPONSE:", err.response);
-            console.log("DATA:", err.response?.data);
-          
-        //   console.error(err.response?.data || err.message);
-        //   alert("Failed to delete post");
-        }
-      };
-   
+  const handleDelete = async (id) => {
+    const token = localStorage.getItem("token");
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    try {
+      await axios.delete(`http://localhost:8001/post/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPosts((prev) => prev.filter((p) => p._id !== id));
+    } catch (err) {
+      console.log("DELETE ERROR:", err);
+    }
+  };
 
   return (
     <>
@@ -423,18 +590,47 @@ const stats = [
             <span className="span1">{user?.email || "No email"}</span> · Here's your content overview
           </div>
         </div>
-
-        <div className="stats-row">
-          {stats.map((s) => (
-            <div className="stat-card" key={s.label}>
-              <div className="stat-icon" style={{ background: s.bg }}>{s.icon}</div>
-              <div className="stat-label">{s.label}</div>
-              <div className="stat-value">{s.value}</div>
+        
+        <div className="profile-state">
+          <div className="profile-header">
+            <div className="avatar-container" onClick={() => fileInputRef.current.click()}>
+              {previewUrl ? (
+                <img src={previewUrl} className="avatar-img" alt="Profile" />
+              ) : (
+                <div className="avatar-initials">{initials(user?.name)}</div>
+              )}
+              <div className="avatar-overlay">
+                {uploading ? "..." : "📸"}
+              </div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                style={{ display: "none" }}
+                accept="image/*"
+              />
             </div>
-          ))}
+            <div className="user-info-dash">
+              <div className="dash-user-name">{user?.name || "Member"}</div>
+              <div className="dash-user-email">{user?.email || "No email provided"}</div>
+            </div>
+          </div>
+
+          <div className="stats-row">
+            {stats.map((s) => (
+              <div className="stat-card" key={s.label}>
+                <div className="stat-icon" style={{ background: s.bg }}>{s.icon}</div>
+                <div className="stat-content">
+                  <div className="stat-label">{s.label}</div>
+                  <div className="stat-value">{s.value}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16, margin: "0 16px 16px" }}>
           <button
             onClick={() => setShowCreate(true)}
             style={{
@@ -468,21 +664,13 @@ const stats = [
             <div className="post-list">
               {posts.map((p, i) => (
                 <div className="post-card" key={p._id} onClick={() => navigate(`/post/${p._id}`)}>
-                  {/* Gradient accent bar */}
                   <div className="post-card-accent" />
-
-                  {/* Card body */}
                   <div className="post-card-body">
-                    {/* Title row */}
                     <div className="post-card-top">
                       <div className="post-num">{i + 1}</div>
                       <div className="post-card-title">{p.title}</div>
                     </div>
-
-                    {/* Content preview — single line */}
                     <div className="post-card-content">{p.content}</div>
-
-                    {/* Tags */}
                     {p.tags && p.tags.length > 0 && (
                       <div className="post-card-tags">
                         {p.tags.map((t) => (
@@ -491,8 +679,6 @@ const stats = [
                       </div>
                     )}
                   </div>
-
-                  {/* Bottom action bar */}
                   <div className="post-card-footer">
                     <span className={`post-status-badge ${p.status === "published" ? "published" : "draft"}`}>
                       {p.status === "published" ? "Published" : "Draft"}

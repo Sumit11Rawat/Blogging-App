@@ -14,7 +14,7 @@ const commentSchema = new mongoose.Schema({
 commentSchema.index({ postId: 1, parentId: 1, createdAt: -1 });
 
 // Helper method to populate nested replies (optional)
-commentSchema.statics.getNestedComments = async function(postId, maxDepth = 5) {
+commentSchema.statics.getNestedComments = async function (postId, maxDepth = 5) {
   // Implementation depends on your needs - aggregation or recursive fetch
 };
 

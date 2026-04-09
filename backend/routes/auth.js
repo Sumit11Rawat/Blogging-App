@@ -12,10 +12,10 @@ const Post = require("../models/post");
 
 // SIGNUP
 router.post("/signup", async (req, res) => {
-    // console.log(req.body);
+  // console.log(req.body);
   const { name, email, password } = req.body;
-//   console.log(req.body);
-  
+  //   console.log(req.body);
+
 
   try {
 
@@ -26,8 +26,8 @@ router.post("/signup", async (req, res) => {
         message: "User already exists"
       });
     }
-    
-    
+
+
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -57,8 +57,8 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
 
   const { email, password } = req.body;
-//   console.log(req.body);
-  
+  //   console.log(req.body);
+
 
   try {
 
@@ -104,16 +104,16 @@ router.post("/login", async (req, res) => {
 
 // PROTECTED ROUTE
 router.get("/profile", verifyToken, async (req, res) => {
-    try {
-      const user = await User.findById(req.user.id).select("-password");
-      
-      const posts = await Post.find({ author: user._id }).sort({ createdAt: -1 });
-  
+  try {
+    const user = await User.findById(req.user.id).select("-password");
 
-  
-      res.json({ user, posts });
-    } catch (err) {
-      res.status(500).json({ message: "Error fetching profile" });
-    }
-  });
+    const posts = await Post.find({ author: user._id }).sort({ createdAt: -1 });
+
+
+
+    res.json({ user, posts });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching profile" });
+  }
+});
 module.exports = router;
