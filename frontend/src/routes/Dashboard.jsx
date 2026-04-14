@@ -68,7 +68,7 @@ const style = `
 
   .profile-edit-btn {
     position: absolute;
-    top: 60%;
+    top: calc(60% - 7px);
     right: 24px;
     left: auto;
     width: 38px;
@@ -562,7 +562,7 @@ const Dashboard = () => {
   const [uploadingBg, setUploadingBg] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [previewBgUrl, setPreviewBgUrl] = useState(null);
-  
+
   // Crop modal states
   const [cropImageSrc, setCropImageSrc] = useState(null);
   const [cropType, setCropType] = useState('profile'); // 'profile' or 'background'
@@ -636,7 +636,7 @@ const Dashboard = () => {
   const handleCropComplete = useCallback(async (croppedBlob, croppedUrl) => {
     const type = cropType;
     setCropImageSrc(null);
-    
+
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -644,23 +644,24 @@ const Dashboard = () => {
     }
 
     const formData = new FormData();
+    const apiPath = type === 'profile' ? 'profile-pic' : 'background-image';
     const fieldName = type === 'profile' ? 'profilePic' : 'backgroundImage';
     const previewSetter = type === 'profile' ? setPreviewUrl : setPreviewBgUrl;
     const uploadingSetter = type === 'profile' ? setUploading : setUploadingBg;
-    
+
     formData.append(fieldName, croppedBlob, `${fieldName}-${Date.now()}.jpg`);
 
     try {
       uploadingSetter(true);
       previewSetter(croppedUrl); // Show preview immediately
-      
-      const res = await axios.post(`http://localhost:8001/auth/${fieldName}`, formData, {
+
+      const res = await axios.post(`http://localhost:8001/auth/${apiPath}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data"
         },
       });
-      
+
       alert(`✅ ${type === 'profile' ? 'Profile picture' : 'Cover photo'} updated!`);
       setUser(prev => ({ ...prev, [fieldName]: res.data[fieldName] }));
     } catch (err) {
@@ -731,7 +732,7 @@ const Dashboard = () => {
           </button>
 
           {/* 🖼️ Background Image Section */}
-          <div 
+          <div
             className="profile-bg-container"
             onClick={() => bgInputRef.current?.click()}
             role="button"
@@ -745,17 +746,17 @@ const Dashboard = () => {
             aria-label="Change cover photo"
           >
             {previewBgUrl || user?.backgroundImage ? (
-              <img 
-                src={previewBgUrl ? previewBgUrl : `http://localhost:8001${user.backgroundImage}`} 
-                className="profile-bg-image" 
-                alt="Background" 
+              <img
+                src={previewBgUrl ? previewBgUrl : `http://localhost:8001${user.backgroundImage}`}
+                className="profile-bg-image"
+                alt="Background"
               />
             ) : (
-              <div style={{ 
-                width: "100%", 
-                height: "100%", 
-                display: "flex", 
-                alignItems: "center", 
+              <div style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
                 justifyContent: "center",
                 color: "#9ca3af",
                 fontSize: "13px"
@@ -778,8 +779,8 @@ const Dashboard = () => {
           </div>
 
           <div className="profile-header">
-            <div 
-              className="avatar-container" 
+            <div
+              className="avatar-container"
               onClick={() => fileInputRef.current?.click()}
               role="button"
               tabIndex={0}
@@ -930,7 +931,7 @@ const Dashboard = () => {
       {cropImageSrc && (
         <CropModal
           imageSrc={cropImageSrc}
-          aspect={cropType === 'profile' ? 1 : 16/9}
+          aspect={cropType === 'profile' ? 1 : 16 / 9}
           cropShape={cropType === 'profile' ? 'round' : 'rect'}
           title={cropType === 'profile' ? 'Adjust Profile Picture' : 'Adjust Cover Photo'}
           onClose={() => {

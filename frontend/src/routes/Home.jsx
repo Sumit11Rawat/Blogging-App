@@ -802,8 +802,8 @@ export default function HomePage() {
 
   /* ── filtering logic ── */
   const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          post.content.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.content.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTag = !selectedTag || (post.tags && post.tags.includes(selectedTag));
     return matchesSearch && matchesTag;
   });
@@ -830,7 +830,7 @@ export default function HomePage() {
         </div>
 
         <div className="home-layout-wrapper">
-          
+
           <div className="home-hero-row">
             <div className="home-main-side">
               <section className="hero">
@@ -861,7 +861,7 @@ export default function HomePage() {
               </section>
             </div>
 
-            <Sidebar 
+            <Sidebar
               posts={posts}
               searchQuery={searchQuery}
               selectedTag={selectedTag}

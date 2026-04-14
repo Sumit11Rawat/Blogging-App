@@ -6,28 +6,7 @@ const mongoose = require("mongoose");
 const Post = require("../models/post");
 const Comment = require("../models/comment"); // ✅ Capital 'C' - must match your model file export
 const verifyToken = require("../middleware/auth");
-
-
-const multer = require("multer");
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only images allowed"), false);
-  }
-};
-
-const upload = multer({ storage, fileFilter });
+const upload = require("../middleware/upload");
 
 
 // ─────────────────────────────────────────────────────────────

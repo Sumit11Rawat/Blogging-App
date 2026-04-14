@@ -1,30 +1,64 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
-const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Login", href: "/login" },
-  { label: "Logout", href: "/logout" },
-];
+
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+
+  const navLinks = token
+    ? [
+        { label: "Home", href: "/" },
+        { label: "About", href: "/about" },
+        { label: "Dashboard", href: "/dashboard" },
+        { label: "Logout", href: "/logout" },
+      ]
+    : [
+        { label: "Home", href: "/" },
+        { label: "About", href: "/about" },
+        { label: "Login", href: "/login" },
+      ];
 
   const navigate = useNavigate();
   const location = useLocation(); // ✅ real route tracking
 
+  // Scroll listener — runs once
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Auth sync — re-checks on every route change so profile stays visible
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    setToken(storedToken);
+    if (storedToken) {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+      if (storedUser) setUser(storedUser);
+
+      axios.get("http://localhost:8001/auth/profile", {
+        headers: { Authorization: `Bearer ${storedToken}` }
+      }).then(res => {
+        setUser(res.data.user);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+      }).catch(err => console.error("Nav sync err:", err));
+    } else {
+      setUser(null);
+    }
+  }, [location.pathname]);
+
   const handleNavClick = (link) => {
     setIsOpen(false);
     if (link.href !== "#") navigate(link.href);
   };
+
+  const initials = (name = "") =>
+    (name?.split(" ").map((w) => w[0]).join("") || "U").toUpperCase().slice(0, 2);
 
   return (
     <>
@@ -172,6 +206,61 @@ export default function Navbar() {
           cursor: pointer;
         }
 
+        /* PROFILE WRAP — same color as nav links */
+        .nav-profile-wrap {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          cursor: pointer;
+          padding: 6px 14px;
+          border-radius: 8px;
+          transition: all 0.25s ease;
+        }
+        .nav-profile-wrap:hover {
+          background: var(--accent-dim);
+        }
+        .nav-profile-wrap:hover .nav-user-name {
+          color: var(--accent);
+        }
+
+        .nav-user-name {
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--muted);
+          transition: color 0.25s;
+        }
+
+        .nav-avatar-circle {
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          border: 2px solid var(--muted);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          background: var(--surface);
+          transition: 0.25s;
+        }
+        .nav-profile-wrap:hover .nav-avatar-circle {
+          border-color: var(--accent);
+        }
+
+        .nav-avatar-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .nav-initials {
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--muted);
+          transition: color 0.25s;
+        }
+        .nav-profile-wrap:hover .nav-initials {
+          color: var(--accent);
+        }
+
         /* HAMBURGER */
         .hamburger {
           display: none;
@@ -265,12 +354,22 @@ export default function Navbar() {
 
         {/* CTA */}
         <div className="nav-cta">
-          <button className="btn-ghost" onClick={() => navigate("/login")}>
-            Sign in
-          </button>
-          <button className="btn-primary">
-            Get Started →
-          </button>
+          {token ? (
+            <div className="nav-profile-wrap" onClick={() => navigate("/dashboard")}>
+              <span className="nav-user-name">{user?.name?.split(" ")[0]}</span>
+              <div className="nav-avatar-circle">
+                {user?.profilePic ? (
+                  <img src={`http://localhost:8001${user.profilePic}`} className="nav-avatar-img" alt="Profile" />
+                ) : (
+                  <span className="nav-initials">{initials(user?.name)}</span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <button className="btn-primary" onClick={() => navigate("/login")}>
+              Get Started →
+            </button>
+          )}
         </div>
 
         {/* HAMBURGER */}

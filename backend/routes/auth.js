@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
 const verifyToken = require("../middleware/auth");
+const upload = require("../middleware/upload");
 
 const router = express.Router();
 
@@ -116,4 +117,48 @@ router.get("/profile", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Error fetching profile" });
   }
 });
+
+// UPLOAD PROFILE PICTURE
+router.post("/profile-pic", verifyToken, upload.single("profilePic"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    const profilePicPath = `/uploads/${req.file.filename}`;
+    await User.findByIdAndUpdate(req.user.id, { profilePic: profilePicPath });
+    res.json({ message: "Profile picture updated", profilePic: profilePicPath });
+  } catch (err) {
+    res.status(500).json({ message: "Error uploading profile picture" });
+  }
+});
+
+// UPLOAD BACKGROUND IMAGE
+router.post("/background-image", verifyToken, upload.single("backgroundImage"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    const bgPath = `/uploads/${req.file.filename}`;
+    await User.findByIdAndUpdate(req.user.id, { backgroundImage: bgPath });
+    res.json({ message: "Background image updated", backgroundImage: bgPath });
+  } catch (err) {
+    res.status(500).json({ message: "Error uploading background image" });
+  }
+});
+
+// UPDATE PROFILE DETAILS
+router.put("/profile", verifyToken, async (req, res) => {
+  const { name, bio, location, website } = req.body;
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { name, bio, location, website },
+      { new: true }
+    ).select("-password");
+    res.json({ message: "Profile updated successfully", user: updatedUser });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating profile" });
+  }
+});
+
 module.exports = router;
