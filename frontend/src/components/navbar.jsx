@@ -2,51 +2,45 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
-
-
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
 
-  const navLinks = token
-    ? [
-        { label: "Home", href: "/" },
-        { label: "About", href: "/about" },
-        { label: "Dashboard", href: "/dashboard" },
-        { label: "Logout", href: "/logout" },
-      ]
-    : [
-        { label: "Home", href: "/" },
-        { label: "About", href: "/about" },
-        { label: "Login", href: "/login" },
-      ];
-
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ real route tracking
+  const location = useLocation();
 
-  // Scroll listener — runs once
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Dynamic Navigation Links
+  const links = [
+    { label: "Home", href: "/" },
+    { label: "About", href: "/about" },
+    ...(token 
+      ? [{ label: "Logout", href: "/logout" }] 
+      : [{ label: "Login", href: "/login" }]
+    )
+  ];
 
-  // Auth sync — re-checks on every route change so profile stays visible
+  // Auth sync
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
     if (storedToken) {
       const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-      if (storedUser) setUser(storedUser);
+      setUser(storedUser);
 
       axios.get("http://localhost:8001/auth/profile", {
         headers: { Authorization: `Bearer ${storedToken}` }
       }).then(res => {
         setUser(res.data.user);
         localStorage.setItem("user", JSON.stringify(res.data.user));
-      }).catch(err => console.error("Nav sync err:", err));
+      }).catch(err => {
+        if (err.response?.status === 401) {
+           localStorage.clear();
+           setToken(null);
+           setUser(null);
+        }
+      });
     } else {
       setUser(null);
     }
@@ -54,7 +48,7 @@ export default function Navbar() {
 
   const handleNavClick = (link) => {
     setIsOpen(false);
-    if (link.href !== "#") navigate(link.href);
+    navigate(link.href);
   };
 
   const initials = (name = "") =>
@@ -92,12 +86,14 @@ export default function Navbar() {
           justify-content: space-between;
           padding: 0 2rem;
           height: var(--nav-height);
+          background: #000000;
           font-family: 'DM Sans', sans-serif;
           transition: 0.4s;
+          border-bottom: 1px solid var(--border);
         }
 
         .navbar.scrolled {
-          background: rgba(10,10,15,0.85);
+          background: #000000;
           backdrop-filter: blur(20px);
           box-shadow: 0 1px 0 var(--border), 0 8px 32px rgba(0,0,0,0.4);
         }
@@ -339,7 +335,7 @@ export default function Navbar() {
 
         {/* DESKTOP LINKS */}
         <ul className="nav-links">
-          {navLinks.map((link) => (
+          {links.map((link) => (
             <li key={link.label}>
               <div
                 className={`nav-link ${location.pathname === link.href ? "active" : ""
@@ -385,7 +381,7 @@ export default function Navbar() {
 
       {/* MOBILE MENU */}
       <div className={`mobile-menu ${isOpen ? "open" : ""}`}>
-        {navLinks.map((link) => (
+        {links.map((link) => (
           <div
             key={link.label}
             className={`mobile-link ${location.pathname === link.href ? "active" : ""

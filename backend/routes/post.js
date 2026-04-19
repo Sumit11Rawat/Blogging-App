@@ -7,6 +7,7 @@ const Post = require("../models/post");
 const Comment = require("../models/comment"); // ✅ Capital 'C' - must match your model file export
 const verifyToken = require("../middleware/auth");
 const upload = require("../middleware/upload");
+const axios = require("axios");
 
 
 // ─────────────────────────────────────────────────────────────
@@ -533,4 +534,91 @@ router.delete("/comments/:id", verifyToken, async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
+
+// ─────────────────────────────────────────────────────────────
+// 📌 SUMMARIZE POST (Smart AI: Automatically supports Gemini & OpenRouter)
+// ─────────────────────────────────────────────────────────────
+router.post("/:id/summarize", verifyToken, async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid post ID format" });
+    }
+
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ message: "AI API Key is missing in .env" });
+    }
+
+    const prompt = `Summary this blog in 2-3 engaging sentences:\n\nTitle: ${post.title}\n\nContent:\n${(post.content || "").slice(0, 10000)}`;
+    let summary = "";
+
+    // ─── OPTION 1: OPENROUTER (sk-or-...) ───
+    if (apiKey.startsWith("sk-or-")) {
+      console.log("🚀 Using OpenRouter API for summary...");
+      
+      const orModels = ["google/gemini-2.0-flash-001", "google/gemini-flash-1.5", "google/gemini-flash-1.5:free", "google/gemini-pro-1.5"];
+      let orError = null;
+
+      for (const modelId of orModels) {
+        try {
+          console.log(`📡 Trying OpenRouter model: ${modelId}`);
+          const response = await axios.post("https://openrouter.ai/api/v1/chat/completions", {
+            model: modelId,
+            messages: [{ role: "user", content: prompt }]
+          }, {
+            headers: {
+              "Authorization": `Bearer ${apiKey}`,
+              "HTTP-Referer": "http://localhost:5173",
+              "X-Title": "Inkwell Blog",
+              "Content-Type": "application/json"
+            },
+            timeout: 30000
+          });
+          
+          summary = response.data?.choices?.[0]?.message?.content;
+          if (summary) {
+            console.log(`✅ Success with OpenRouter model: ${modelId}`);
+            break; 
+          }
+        } catch (err) {
+          console.warn(`❌ OpenRouter model ${modelId} failed:`, err.response?.data?.error?.message || err.message);
+          orError = err;
+        }
+      }
+      if (!summary) throw orError || new Error("All OpenRouter models failed");
+    } 
+    // ─── OPTION 2: GOOGLE API (AIza...) ───
+    else {
+      console.log("✨ Using Google Gemini API for summary...");
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+      const response = await axios.post(url, {
+        contents: [{ parts: [{ text: prompt }] }]
+      }, {
+        headers: { "Content-Type": "application/json" },
+        timeout: 30000
+      });
+      summary = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    }
+
+    if (!summary) throw new Error("No summary returned from AI service");
+
+    console.log("✅ AI Summary generated successfully!");
+    return res.json({ summary: summary.trim() });
+
+  } catch (err) {
+    console.error("❌ AI Error:", err.response?.data || err.message);
+    const errorDetails = err.response?.data?.error?.message || err.message;
+    
+    res.status(500).json({
+      message: "Failed to generate summary.",
+      error: errorDetails
+    });
+  }
+});
+
 module.exports = router;

@@ -119,14 +119,117 @@ const postDetailStyle = `
 
   .post-box {
     width: 100%;
-    max-width: 780px;
     background: var(--card-bg);
     border-radius: 24px;
     border: 2px solid rgba(139, 0, 0, 0.6);
     box-shadow: var(--box-shadow);
     overflow: hidden;
     position: relative;
+  }
+
+  .post-layout-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 32px;
+    width: 100%;
+    max-width: 1100px;
     margin-top: -40px;
+  }
+
+  .post-layout-container > .post-box {
+    margin-top: 0;
+    flex: 1;
+    min-width: 0;
+    max-width: 780px;
+  }
+
+  .ai-summary-box {
+    width: 320px;
+    background: var(--card-bg);
+    border-radius: 20px;
+    border: 2px solid rgba(201, 168, 76, 0.4);
+    box-shadow: 0 10px 40px rgba(13,13,15,0.08);
+    padding: 24px;
+    position: sticky;
+    top: 100px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .ai-summary-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 20px 20px 0 0;
+  }
+
+  .ai-summary-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-summarize {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--gold), #be9d42);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    box-shadow: 0 6px 16px rgba(201,168,76,.3);
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-summarize:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(201,168,76,.45);
+  }
+  .btn-summarize:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .summary-text {
+    margin-top: 20px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--ink);
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  .summary-error {
+    margin-top: 20px;
+    font-size: 13px;
+    color: #8b0000;
+    text-align: center;
+    padding-top: 16px;
+    border-top: 1px dashed rgba(139,0,0,0.2);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .post-box::before {
@@ -817,6 +920,18 @@ const postDetailStyle = `
     .comment-actions { padding-left: 0; }
     .replies-list { margin-left: 24px; padding-left: 16px; }
     .post-meta { flex-wrap: wrap; gap: 8px; }
+    .post-layout-container {
+      flex-direction: column;
+      align-items: center;
+      max-width: 780px;
+    }
+    .ai-summary-box {
+      width: 100%;
+      position: relative;
+      top: 0;
+      order: -1; 
+      margin-bottom: 24px;
+    }
     .btn-delete-post { margin-left: 0; margin-top: 12px; width: 100%; justify-content: center; }
   }
 `;
@@ -1049,6 +1164,10 @@ export default function PostDetail() {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyContent, setReplyContent] = useState({});
   const [submitting, setSubmitting] = useState(false);
+
+  const [aiSummary, setAiSummary] = useState(null);
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summaryError, setSummaryError] = useState(null);
 
   const findCommentInTree = useCallback((comments, commentId) => {
     for (let cmt of comments) {
@@ -1355,6 +1474,30 @@ export default function PostDetail() {
     }
   };
 
+  // ── Handle Combine Summary ──
+  const handleSummarize = async () => {
+    if (!isLoggedIn) {
+      alert("Please log in to use AI Summary.");
+      return;
+    }
+    
+    setIsSummarizing(true);
+    setSummaryError(null);
+    try {
+      const res = await axios.post(
+        `http://localhost:8001/post/${id}/summarize`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAiSummary(res.data.summary);
+    } catch (err) {
+      console.error("Summary error:", err);
+      setSummaryError(err.response?.data?.message || "Failed to generate summary.");
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
   // ── Loading State ──
   if (loading) {
     return (
@@ -1425,13 +1568,14 @@ export default function PostDetail() {
       </div>
 
       <div className="post-root">
-        <div className="post-box">
-          <div className="corner-accent top-right" />
-          <div className="corner-accent bottom-left" />
+        <div className="post-layout-container">
+          <div className="post-box">
+            <div className="corner-accent top-right" />
+            <div className="corner-accent bottom-left" />
 
-          <button className="post-back-btn" onClick={() => navigate("/")}>
-            ← Back to Home
-          </button>
+            <button className="post-back-btn" onClick={() => navigate("/")} style={{marginLeft: '24px', marginTop: '16px', paddingBottom: '0'}}>
+              ← Back to Home
+            </button>
 
           <div className="post-content-wrapper">
             <article className="post-article">
@@ -1489,9 +1633,9 @@ export default function PostDetail() {
                     // if image fails to load, show placeholder
                     e.target.style.display = "none";
                     e.target.parentNode.innerHTML = `
-                      <div class="post-image-placeholder">
-                        <div class="placeholder-icon">🖼️</div>
-                        <div class="placeholder-text">Image unavailable</div>
+                      <div className="post-image-placeholder">
+                        <div className="placeholder-icon">🖼️</div>
+                        <div className="placeholder-text">Image unavailable</div>
                       </div>`;
                   }}
                 />
@@ -1585,6 +1729,36 @@ export default function PostDetail() {
               )}
             </section>
           </div>
+        </div>
+        
+        {/* ✨ AI SUMMARY BOX ✨ */}
+        <aside className="ai-summary-box">
+          <h3 className="ai-summary-title">✨ AI Summary</h3>
+          <button 
+            className="btn-summarize" 
+            onClick={handleSummarize} 
+            disabled={isSummarizing || aiSummary != null}
+          >
+            {isSummarizing ? (
+              <><span className="spinner" /> Generating...</>
+            ) : aiSummary ? (
+              "Summary Generated!"
+            ) : (
+              "Summarize with AI"
+            )}
+          </button>
+
+          {summaryError && (
+             <div className="summary-error">{summaryError}</div>
+          )}
+
+          {aiSummary && (
+            <div className="summary-text">
+              {aiSummary}
+            </div>
+          )}
+        </aside>
+
         </div>
       </div>
     </>

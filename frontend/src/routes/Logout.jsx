@@ -233,6 +233,7 @@ export default function LogoutPage() {
     // Simulate a brief delay for UX (remove setTimeout if not needed)
     setTimeout(() => {
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
       setLoading(false);
       setLoggedOut(true);
 
