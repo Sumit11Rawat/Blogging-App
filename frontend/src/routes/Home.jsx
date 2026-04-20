@@ -286,15 +286,16 @@ const homeStyle = `
   }
 
   .cta-primary {
-    padding: 14px 36px;
     background: var(--ink);
-    color: var(--paper);
-    border: none;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 500;
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
+    border: none;
     transition: 0.3s;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   }
   .cta-primary:hover {
     background: var(--gold);
@@ -341,15 +342,18 @@ const homeStyle = `
   }
   .divider-line { flex: 1; height: 1.5px; background: rgba(0,0,0,0.8); }
   .divider-boxed {
-    border: 1.5px solid var(--ink);
-    padding: 8px 18px;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 700;
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 24px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--ink);
-    background: transparent;
+    letter-spacing: 2px;
+    border-radius: 0;
+    position: relative;
+    box-shadow: 8px 8px 0 var(--gold);
+    border: 2px solid var(--ink);
   }
   .divider-label {
     font-size: 14px;
@@ -360,12 +364,7 @@ const homeStyle = `
   }
 
   /* ── POSTS GRID ── */
-  .posts-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 40px;
-    padding: 0 40px 80px 20px;
-  }
+  /* (Consolidated below at line 601) */
 
   /* ── POST CARD ── */
   .post-card {
@@ -603,6 +602,55 @@ const homeStyle = `
     grid-template-columns: repeat(3, 1fr);
     gap: 30px;
     padding: 30px 0;
+    width: 100% !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* ── THEMATIC DIVIDER ── */
+  .thematic-divider {
+    width: 100%;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    margin: 10px 0;
+  }
+  .divider-line-main {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    position: relative;
+  }
+  .divider-pulse {
+    position: absolute;
+    top: -1px;
+    left: -100px;
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    filter: blur(1px);
+    animation: flowPulse 6s infinite ease-in-out;
+  }
+  .divider-ornament {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    color: var(--gold);
+    background: #fff;
+    padding: 0 20px;
+    position: absolute;
+    z-index: 2;
+    font-style: italic;
+    opacity: 0.8;
+  }
+
+  @keyframes flowPulse {
+    0% { left: -10%; opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { left: 110%; opacity: 0; }
   }
 
   .post-card {
@@ -674,15 +722,57 @@ const homeStyle = `
     flex: 1;
   }
 
-  @media (max-width: 1100px) {
-    .home-hero-row { flex-direction: column; padding-right: 0; }
+  @media (max-width: 1200px) {
+    .posts-grid   { grid-template-columns: repeat(2, 1fr); }
+    .hero         { padding: 40px 40px; }
+    .home-hero-row { flex-direction: column; }
   }
 
-  @media (max-width: 700px) {
-    .hero         { padding: 48px 20px; }
-    .home-container { padding: 0 20px 60px; }
-    .posts-grid   { grid-template-columns: 1fr; }
+  @media (max-width: 768px) {
+    .home-hero-row { flex-direction: column; }
+    .hero         { 
+       padding: 40px 24px; 
+       flex-direction: column;
+       text-align: center;
+       min-height: auto;
+    }
+    .hero-left    { width: 100%; }
+    .hero-title   { font-size: 32px; margin-bottom: 16px; color: var(--ink); line-height: 1.2; }
+    .hero-sub     { font-size: 14px; margin: 0 auto 24px; max-width: 280px; }
+    .hero-cta     { justify-content: center; flex-direction: column; width: 100%; gap: 12px; }
+    .cta-primary  { width: fit-content; margin: 0 auto; padding: 12px 24px; }
+    .hero-right-deco { display: none; }
+    
+    .home-container { padding: 0 16px 60px; }
+    .main-content { padding-top: 0; }
+    .post-count-row { padding-left: 10px !important; margin-top: 0 !important; margin-bottom: 10px !important; }
+    .posts-grid   { grid-template-columns: 1fr; gap: 20px; }
+    .post-card    { height: auto; border-radius: 12px; }
+    .post-title   { font-size: 20px; margin-bottom: 4px; }
+    .post-card-body { padding: 16px; }
+    .post-card-image { height: 180px; }
+    
+    .section-divider { 
+      display: flex; 
+      padding: 0; 
+      gap: 12px;
+      margin: 20px 0 30px;
+    }
+    .divider-line { height: 1px; opacity: 0.2; }
+    .divider-boxed { 
+      font-size: 12px; 
+      padding: 8px 16px; 
+      white-space: nowrap;
+      background: var(--ink);
+      border: none;
+      color: #fff;
+      font-weight: 900;
+      box-shadow: 4px 4px 0 var(--gold);
+    }
+    
     .corner-ornament { display: none; }
+    .bg-deco-quote, .bg-deco-quote-2, .float-char-1, .float-char-2 { display: none !important; }
+    .bg-deco-lines::after { display: none; }
   }
 `;
 
@@ -870,6 +960,13 @@ export default function HomePage() {
               getImageSrc={getImageSrc}
               onPostClick={navigate}
             />
+          </div>
+
+          <div className="thematic-divider">
+            <div className="divider-line-main">
+              <div className="divider-pulse" />
+            </div>
+            <div className="divider-ornament">✧</div>
           </div>
 
           <div className="home-container">

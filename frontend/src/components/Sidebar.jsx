@@ -123,11 +123,84 @@ const sidebarStyle = `
   }
   .tag-pill:hover, .tag-pill.active { background: #B22222; color: #fff; border-color: #B22222; }
 
-  @media (max-width: 1100px) {
-    .home-sidebar { width: 100%; position: relative; top: 0; height: auto; padding: 20px 32px; }
+  .sidebar-toggle {
+    display: none;
+    width: 100%;
+    padding: 14px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 24px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
-  @media (max-width: 700px) {
-    .home-sidebar { padding: 20px; }
+
+  .sidebar-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  }
+
+  .sidebar-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    transition: 0.5s;
+    animation: shimmerToggle 4s infinite linear;
+  }
+
+  @keyframes shimmerToggle {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  @media (max-width: 1100px) {
+    .sidebar-toggle { display: flex; }
+    .home-sidebar { 
+      width: 100%; 
+      position: relative; 
+      top: 0; 
+      height: auto; 
+      padding: 0 20px 20px; 
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+    .sidebar-content {
+      display: none;
+      animation: slideDown 0.3s ease-out;
+    }
+    .sidebar-content.open {
+      display: block;
+    }
+    .sidebar-widget {
+       margin-bottom: 16px;
+       border: 1.5px solid rgba(13,13,15,0.06);
+       box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 `;
 
@@ -151,83 +224,95 @@ const Sidebar = ({
 
   const uniqueTags = [...new Set(posts.flatMap(p => p.tags || []))].sort();
 
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
   return (
     <>
       <style>{sidebarStyle}</style>
       <aside className="home-sidebar">
         
-        {/* SEARCH WIDGET */}
-        <div className="sidebar-widget">
-          <div className="search-wrap">
-            <span className="search-icon">🔍</span>
-            <input 
-              type="text" 
-              className="search-input" 
-              placeholder="Search stories..." 
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-            />
-          </div>
-        </div>
+        {/* MOBILE TOGGLE */}
+        <button 
+          className="sidebar-toggle"
+          onClick={() => setIsMobileOpen(!isMobileOpen)}
+        >
+          {isMobileOpen ? "📖 Hide Filters & Search" : "🔍 Search & Filter Stories"}
+        </button>
 
-        {/* TRENDING WIDGET */}
-        <div className="sidebar-widget">
-          <h3 className="widget-title">🔥 Trending</h3>
-          <div className="mini-list">
-            {trendingPosts.map(post => (
-              <div key={post._id} className="mini-card" onClick={() => onPostClick(`/post/${post._id}`)}>
-                <img src={getImageSrc(post.image) || "https://via.placeholder.com/60"} className="mini-img" alt="" />
-                <div className="mini-info">
-                  <div className="mini-title">{post.title}</div>
-                  <div className="mini-meta">
-                    <span>❤️ {post.likes?.length || 0} Likes</span>
-                    <span>•</span>
-                    <span>{post.author?.name || "Anonymous"}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* RECENT STORIES WIDGET */}
-        <div className="sidebar-widget">
-          <h3 className="widget-title">⏳ Recent Stories</h3>
-          <div className="mini-list">
-            {recentPosts.map(post => (
-              <div key={post._id} className="mini-card" onClick={() => onPostClick(`/post/${post._id}`)}>
-                <div className="mini-info">
-                  <div className="mini-title">{post.title}</div>
-                  <div className="mini-meta">
-                    <span>🗓 {new Date(post.createdAt).toLocaleDateString()}</span>
-                    <span>•</span>
-                    <span>{new Date(post.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CATEGORIES WIDGET */}
-        <div className="sidebar-widget">
-          <h3 className="widget-title">📁 Categories</h3>
-          <div className="tag-cloud">
-            <div 
-              className={`tag-pill ${!selectedTag ? "active" : ""}`}
-              onClick={() => onTagSelect("")}
-            >
-              All Stories
+        <div className={`sidebar-content ${isMobileOpen ? "open" : ""}`}>
+          {/* SEARCH WIDGET */}
+          <div className="sidebar-widget">
+            <div className="search-wrap">
+              <span className="search-icon">🔍</span>
+              <input 
+                type="text" 
+                className="search-input" 
+                placeholder="Search stories..." 
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+              />
             </div>
-            {uniqueTags.map(tag => (
+          </div>
+
+          {/* TRENDING WIDGET */}
+          <div className="sidebar-widget">
+            <h3 className="widget-title">🔥 Trending</h3>
+            <div className="mini-list">
+              {trendingPosts.map(post => (
+                <div key={post._id} className="mini-card" onClick={() => onPostClick(`/post/${post._id}`)}>
+                  <img src={getImageSrc(post.image) || "https://via.placeholder.com/60"} className="mini-img" alt="" />
+                  <div className="mini-info">
+                    <div className="mini-title">{post.title}</div>
+                    <div className="mini-meta">
+                      <span>❤️ {post.likes?.length || 0} Likes</span>
+                      <span>•</span>
+                      <span>{post.author?.name || "Anonymous"}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* RECENT STORIES WIDGET */}
+          <div className="sidebar-widget">
+            <h3 className="widget-title">⏳ Recent Stories</h3>
+            <div className="mini-list">
+              {recentPosts.map(post => (
+                <div key={post._id} className="mini-card" onClick={() => onPostClick(`/post/${post._id}`)}>
+                  <div className="mini-info">
+                    <div className="mini-title">{post.title}</div>
+                    <div className="mini-meta">
+                      <span>🗓 {new Date(post.createdAt).toLocaleDateString()}</span>
+                      <span>•</span>
+                      <span>{new Date(post.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CATEGORIES WIDGET */}
+          <div className="sidebar-widget">
+            <h3 className="widget-title">📁 Categories</h3>
+            <div className="tag-cloud">
               <div 
-                key={tag} 
-                className={`tag-pill ${selectedTag === tag ? "active" : ""}`}
-                onClick={() => onTagSelect(tag)}
+                className={`tag-pill ${!selectedTag ? "active" : ""}`}
+                onClick={() => onTagSelect("")}
               >
-                #{tag}
+                All Stories
               </div>
-            ))}
+              {uniqueTags.map(tag => (
+                <div 
+                  key={tag} 
+                  className={`tag-pill ${selectedTag === tag ? "active" : ""}`}
+                  onClick={() => onTagSelect(tag)}
+                >
+                  #{tag}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

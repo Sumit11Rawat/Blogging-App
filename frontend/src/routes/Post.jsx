@@ -141,7 +141,7 @@ const postDetailStyle = `
     margin-top: 0;
     flex: 1;
     min-width: 0;
-    max-width: 780px;
+    max-width: 820px;
   }
 
   .ai-summary-box {
@@ -907,23 +907,11 @@ const postDetailStyle = `
     box-shadow: 0 6px 16px rgba(178,34,34,0.4);
   }
 
-  @media (max-width: 768px) {
-    .post-box { border-radius: 20px; }
-    .post-content-wrapper { padding: 24px 28px 32px; }
-    .post-image, .post-image-placeholder { height: 260px; }
-    .post-content { font-size: 16px; }
-    .form-row { flex-direction: column; }
-    .corner-accent { width: 40px; height: 40px; }
-    :root { --reply-indent: 40px; }
-    .bg-canvas { display: none; }
-    .comment-body { padding-left: 0; }
-    .comment-actions { padding-left: 0; }
-    .replies-list { margin-left: 24px; padding-left: 16px; }
-    .post-meta { flex-wrap: wrap; gap: 8px; }
+  @media (max-width: 1024px) {
     .post-layout-container {
       flex-direction: column;
       align-items: center;
-      max-width: 780px;
+      gap: 24px;
     }
     .ai-summary-box {
       width: 100%;
@@ -931,8 +919,37 @@ const postDetailStyle = `
       top: 0;
       order: -1; 
       margin-bottom: 24px;
+      position: relative !important;
     }
-    .btn-delete-post { margin-left: 0; margin-top: 12px; width: 100%; justify-content: center; }
+    .post-layout-container > .post-box {
+       max-width: 100%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .post-root { padding: 16px 12px 60px; }
+    .post-box { border-radius: 16px; }
+    .post-content-wrapper { padding: 24px 20px 32px; }
+    .post-image, .post-image-placeholder { height: 240px; }
+    .post-content { font-size: 16px; border: none; }
+    .form-row { flex-direction: column; }
+    .corner-accent { display: none; }
+    :root { --reply-indent: 24px; }
+    .bg-canvas { display: none; }
+    
+    .comment-body { padding-left: 0 !important; }
+    .comment-actions { padding-left: 0 !important; }
+    .replies-list { 
+      margin-left: 12px; 
+      padding: 12px 0 12px 16px; 
+    }
+    
+    .post-meta { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .post-actions-meta { width: 100%; justify-content: space-between; }
+    .btn-delete-post { margin-left: 0; padding: 10px; width: auto; font-size: 12px; }
+    
+    .post-title { font-size: 32px; margin-bottom: 16px; }
+    .comments-section { margin: 40px -20px -32px; padding: 32px 20px; }
   }
 `;
 
@@ -1503,6 +1520,11 @@ export default function PostDetail() {
 
   // ── Handle Listen (Text-to-Speech) ──
   const handleListen = () => {
+    if (!isLoggedIn) {
+      alert("Please log in to listen to this post.");
+      return;
+    }
+
     if (isSpeaking) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);

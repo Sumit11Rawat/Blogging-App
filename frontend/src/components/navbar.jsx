@@ -80,7 +80,7 @@ export default function Navbar() {
         .navbar {
           position: fixed;
           top: 0; left: 0; right: 0;
-          z-index: 100;
+          z-index: 2000 !important;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -127,8 +127,12 @@ export default function Navbar() {
         /* NAV LINKS */
         .nav-links {
           display: flex;
-          gap: 4px;
+          flex-direction: row;
+          align-items: center;
+          gap: 20px;
           list-style: none;
+          margin: 0;
+          padding: 0;
         }
 
         .nav-link {
@@ -175,7 +179,9 @@ export default function Navbar() {
         /* CTA */
         .nav-cta {
           display: flex;
-          gap: 10px;
+          flex-direction: row;
+          align-items: center;
+          gap: 16px;
         }
 
         .btn-ghost {
@@ -290,6 +296,7 @@ export default function Navbar() {
           pointer-events: none;
           transform: translateY(-10px);
           transition: 0.3s;
+          z-index: 1999 !important;
         }
 
         .mobile-menu.open {
@@ -316,11 +323,30 @@ export default function Navbar() {
         }
 
         @media (max-width: 768px) {
+          .navbar { padding: 0 1rem; }
+          .logo-text { font-size: 16px; }
           .nav-links, .nav-cta {
-            display: none;
+            display: none !important;
           }
           .hamburger {
             display: flex;
+          }
+          .mobile-menu {
+            padding: 1.5rem;
+            max-height: calc(100vh - var(--nav-height));
+            overflow-y: auto;
+          }
+          .mobile-link {
+            font-size: 16px;
+            font-weight: 500;
+          }
+          .mobile-auth-section {
+            border-top: 1px solid var(--border);
+            margin-top: 10px;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
           }
         }
       `}</style>
@@ -379,7 +405,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* MOBILE MENU */}
       <div className={`mobile-menu ${isOpen ? "open" : ""}`}>
         {links.map((link) => (
           <div
@@ -391,6 +416,27 @@ export default function Navbar() {
             {link.label}
           </div>
         ))}
+        
+        {/* MOBILE AUTH/PROFILE SECTION */}
+        <div className="mobile-auth-section">
+          {token ? (
+            <>
+              <div className="mobile-link" onClick={() => handleNavClick({ href: "/dashboard" })}>
+                👤 Dashboard ({user?.name?.split(" ")[0]})
+              </div>
+              <div className="mobile-link" style={{ color: '#ff6b6b' }} onClick={() => {
+                localStorage.clear();
+                window.location.href = "/";
+              }}>
+                🚪 Logout
+              </div>
+            </>
+          ) : (
+            <button className="btn-primary" style={{ width: '100%' }} onClick={() => handleNavClick({ href: "/login" })}>
+              Get Started →
+            </button>
+          )}
+        </div>
       </div>
     </>
   );
