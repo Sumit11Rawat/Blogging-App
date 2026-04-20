@@ -1169,6 +1169,9 @@ export default function PostDetail() {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState(null);
 
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState(null);
+
   const findCommentInTree = useCallback((comments, commentId) => {
     for (let cmt of comments) {
       if (cmt._id === commentId) return cmt;
@@ -1498,6 +1501,42 @@ export default function PostDetail() {
     }
   };
 
+  // ── Handle Listen (Text-to-Speech) ──
+  const handleListen = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    if (!post?.content) return;
+
+    // Clean HTML tags and limit text if necessary
+    const cleanedContent = post.content.replace(/<[^>]*>?/gm, "");
+    const textToSpeak = `The title of the post is ${post.title}. Its main content is ${cleanedContent}`;
+    
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = "en-US";
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = (event) => {
+      console.error("SpeechSynthesis error:", event);
+      setIsSpeaking(false);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, []);
+
   // ── Loading State ──
   if (loading) {
     return (
@@ -1757,6 +1796,21 @@ export default function PostDetail() {
               {aiSummary}
             </div>
           )}
+
+          {/* 🎧 Listen Feature */}
+          <div style={{ marginTop: '16px', borderTop: '1px dashed var(--border)', paddingTop: '16px' }}>
+             <button 
+                className="btn-summarize" 
+                onClick={handleListen}
+                style={{ background: isSpeaking ? 'linear-gradient(135deg, #B22222, #8b0000)' : 'linear-gradient(135deg, #4a90e2, #357abd)' }}
+              >
+                {isSpeaking ? (
+                  <><span className="spinner" /> Stop Listening</>
+                ) : (
+                  <>🎧 Listen to Post</>
+                )}
+              </button>
+          </div>
         </aside>
 
         </div>
