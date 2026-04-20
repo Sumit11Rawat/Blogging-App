@@ -26,7 +26,7 @@ const style = `
     font-size: 40px; 
     font-weight: 700; 
     color: #111827; 
-    margin: -20px 0 6px 23px;
+    margin: 0 0 6px 0;
     letter-spacing: -0.03em;
     background: linear-gradient(135deg, #111827 0%, #5d4037 50%, #8b0000 100%);
     -webkit-background-clip: text;
@@ -34,6 +34,7 @@ const style = `
     background-clip: text;
     text-shadow: 0 2px 4px rgba(0,0,0,0.04);
     position: relative;
+    width: fit-content;
   }
   .dashboard-title::after {
     content: '';
@@ -46,8 +47,8 @@ const style = `
     border-radius: 2px;
   }
 
-  .welcome-title { margin: 0px 0 0px 23px; font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 100; color: #111827; margin-bottom: 4px; }
-  .welcome-sub { margin: 0px 0 0px 23px; font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+  .welcome-title { margin: 20px 0 4px 0; font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 100; color: #111827; }
+  .welcome-sub { margin: 0 0 12px 0; font-size: 13px; color: #6b7280; }
   .span { font-weight: 700; color: #B22222; }
   .span1 { color: #B22222; }
 
@@ -273,7 +274,7 @@ const style = `
     box-shadow: 0 4px 16px rgba(93,64,55,0.06);
     position: relative;
     overflow: hidden;
-    margin: 0 16px 24px;
+    margin: 0 0 24px 0;
   }
   .section::before {
     content: '';
@@ -485,14 +486,35 @@ const style = `
   .empty-title { font-size: 15px; font-weight: 500; color: #6b7280; margin-bottom: 6px; }
   .empty-sub { font-size: 13px; }
 
-  @media (max-width: 700px) {
-    .post-list { grid-template-columns: 1fr; }
-    .profile-state { margin: 0 8px 20px; padding: 16px 18px; }
-    .section { margin: 0 8px 24px; padding: 24px; }
-    .profile-edit-btn { top: 16px; right: 18px; width: 34px; height: 34px; font-size: 14px; }
-    .profile-bg-container { height: 100px; margin: -16px -18px 0 -18px; }
-    .profile-header { margin-top: -32px; }
-    .avatar-container { width: 56px; height: 56px; }
+  @media (max-width: 768px) {
+    .dash-root { padding: 16px 16px 40px; }
+    .dashboard-title { font-size: 32px; }
+    .welcome-title { font-size: 24px; }
+    
+    .profile-state { margin: 0 0 24px 0; width: 100%; padding: 12px 16px 20px; border-radius: 20px; }
+    .profile-bg-container { height: 110px; margin: -12px -16px 0 -16px; border-radius: 20px 20px 0 0; }
+    .profile-header { margin-top: -28px; gap: 12px; }
+    .avatar-container { width: 52px; height: 52px; border-width: 2px; }
+    .dash-user-name { font-size: 16px; }
+    .profile-edit-btn { top: 112px; right: 20px; transform: none; width: 34px; height: 34px; font-size: 14px; }
+    
+    .stat-card { min-width: 100%; padding: 12px; }
+    .stat-value { font-size: 16px; }
+    
+    .section { padding: 20px 16px; margin: 0 0 24px 0; }
+    .section-title { font-size: 22px; }
+    .post-list { grid-template-columns: 1fr; gap: 16px; }
+    
+    .post-card-body { padding: 16px 18px 14px; }
+    .post-card-title { font-size: 16px; }
+    .post-card-footer { padding: 12px 18px; flex-wrap: wrap; gap: 10px; }
+    .btn-update, .btn-delete { flex: 1; text-align: center; justify-content: center; min-width: 80px; }
+    
+    .modal-card { border-radius: 0; height: 100vh; max-height: 100vh; }
+    .modal-header { padding: 20px 24px; }
+    .modal-header-icon { width: 40px; height: 40px; font-size: 18px; }
+    .modal-body { padding: 20px 24px; }
+    .fields-row { grid-template-columns: 1fr; }
   }
 
   @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
@@ -829,7 +851,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16, margin: "0 16px 16px" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
           <button
             onClick={() => setShowCreate(true)}
             style={{
