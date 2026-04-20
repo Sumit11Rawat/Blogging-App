@@ -8,6 +8,7 @@ const Comment = require("../models/comment"); // ✅ Capital 'C' - must match yo
 const verifyToken = require("../middleware/auth");
 const upload = require("../middleware/upload");
 const axios = require("axios");
+const googleTTS = require("google-tts-api"); 
 
 
 // ─────────────────────────────────────────────────────────────
@@ -560,7 +561,7 @@ router.post("/:id/summarize", verifyToken, async (req, res) => {
     // ─── OPTION 1: OPENROUTER (sk-or-...) ───
     if (apiKey.startsWith("sk-or-")) {
       console.log("🚀 Using OpenRouter API for summary...");
-      
+
       const orModels = ["google/gemini-2.0-flash-001", "google/gemini-flash-1.5", "google/gemini-flash-1.5:free", "google/gemini-pro-1.5"];
       let orError = null;
 
@@ -579,11 +580,11 @@ router.post("/:id/summarize", verifyToken, async (req, res) => {
             },
             timeout: 30000
           });
-          
+
           summary = response.data?.choices?.[0]?.message?.content;
           if (summary) {
             console.log(`✅ Success with OpenRouter model: ${modelId}`);
-            break; 
+            break;
           }
         } catch (err) {
           console.warn(`❌ OpenRouter model ${modelId} failed:`, err.response?.data?.error?.message || err.message);
@@ -591,11 +592,11 @@ router.post("/:id/summarize", verifyToken, async (req, res) => {
         }
       }
       if (!summary) throw orError || new Error("All OpenRouter models failed");
-    } 
+    }
     // ─── OPTION 2: GOOGLE API (AIza...) ───
     else {
       console.log("✨ Using Google Gemini API for summary...");
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
       const response = await axios.post(url, {
         contents: [{ parts: [{ text: prompt }] }]
       }, {
@@ -613,11 +614,43 @@ router.post("/:id/summarize", verifyToken, async (req, res) => {
   } catch (err) {
     console.error("❌ AI Error:", err.response?.data || err.message);
     const errorDetails = err.response?.data?.error?.message || err.message;
-    
+
     res.status(500).json({
       message: "Failed to generate summary.",
       error: errorDetails
     });
+  }
+});
+
+
+// ─────────────────────────────────────────────────────────────
+// 📌 GET TEXT-TO-SPEECH URL
+// ─────────────────────────────────────────────────────────────
+router.get("/:id/tts", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid post ID format" });
+    }
+
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const cleanedContent = post.content.replace(/<[^>]*>?/gm, "").slice(0, 5000);
+    const textToSpeak = `The title of the post is ${post.title}. Its main content is ${cleanedContent}`; 
+    
+    const urls = googleTTS.getAllAudioUrls(textToSpeak, {
+      lang: "en",
+      slow: false,
+      host: "https://translate.google.com",
+    });
+
+    res.json({ urls });
+
+  } catch (err) {
+    console.error("❌ TTS Error:", err.message);
+    res.status(500).json({ message: "Failed to generate audio URL" });
   }
 });
 
