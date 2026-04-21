@@ -24,6 +24,11 @@ app.use(cors({
 
 mongoose.connect(mongoURI) .then(() => console.log("MongoDB connected"));
 
+// 🔹 Diagnostic Root Route
+app.get("/", (req, res) => {
+  res.send("Inkwell API is running... ✒️");
+});
+
 // 🔹 Routes
 app.use("/auth", authRoutes);
 
