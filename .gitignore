@@ -1,0 +1,16 @@
+# Root .gitignore
+node_modules/
+.env
+.DS_Store
+.vscode/
+
+# Backend specific
+backend/node_modules/
+backend/.env
+backend/uploads/
+
+# Frontend specific
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
