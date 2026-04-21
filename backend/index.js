@@ -16,7 +16,7 @@ const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cors({
-  origin: "http://localhost:5173",  // your React dev server port (Vite default)
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
@@ -34,8 +34,12 @@ app.use("/uploads", express.static("uploads"));
 // server.js
 // app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ Use custom HTTP server with larger header size to prevent 431 errors
-const server = http.createServer({ maxHeaderSize: 32768 }, app);
-server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+// ✅ Only listen if not running as a Vercel serverless function
+if (process.env.NODE_ENV !== 'production') {
+  const server = http.createServer({ maxHeaderSize: 32768 }, app);
+  server.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
+
+module.exports = app;

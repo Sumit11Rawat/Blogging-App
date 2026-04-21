@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import API_BASE_URL from "../config/apiConfig";
 
 const postDetailStyle = `
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap');
@@ -980,7 +981,7 @@ const getImageSrc = (image) => {
     }
     // Normalize path: ensure it starts with /
     const normalizedPath = image.startsWith("/") ? image : `/${image}`;
-    return `http://localhost:8001${normalizedPath}`;
+    return `${API_BASE_URL}${normalizedPath}`;
   };
 
 // ✅ NEW: Robust user comparison helper (userId primary, name fallback)
@@ -1239,8 +1240,8 @@ export default function PostDetail() {
 
       try {
         const [postRes, commentsRes] = await Promise.all([
-          axios.get(`http://localhost:8001/post/${id}`),
-          axios.get(`http://localhost:8001/post/${id}/comments`).catch(() => ({ data: [] }))
+          axios.get(`${API_BASE_URL}/post/${id}`),
+          axios.get(`${API_BASE_URL}/post/${id}/comments`).catch(() => ({ data: [] }))
         ]);
 
         if (postRes.data.status !== "published") {
@@ -1292,7 +1293,7 @@ export default function PostDetail() {
       };
 
       const res = await axios.post(
-        `http://localhost:8001/post/${id}/comments`,
+        `${API_BASE_URL}/post/${id}/comments`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -1332,7 +1333,7 @@ export default function PostDetail() {
       };
 
       const res = await axios.post(
-        `http://localhost:8001/post/${id}/comments`,
+        `${API_BASE_URL}/post/${id}/comments`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -1381,7 +1382,7 @@ export default function PostDetail() {
 
     try {
       const res = await axios.post(
-        `http://localhost:8001/post/${id}/like`,
+        `${API_BASE_URL}/post/${id}/like`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -1430,7 +1431,7 @@ export default function PostDetail() {
 
     try {
       await axios.post(
-        `http://localhost:8001/post/comments/${commentId}/like`,
+        `${API_BASE_URL}/post/comments/${commentId}/like`,
         {
           userId: currentUserId,
           action: currentlyLiked ? 'unlike' : 'like'
@@ -1463,7 +1464,7 @@ export default function PostDetail() {
     try {
       await axios({
         method: "DELETE",
-        url: `http://localhost:8001/post/comments/${commentId}`,
+        url: `${API_BASE_URL}/post/comments/${commentId}`,
         headers: { Authorization: `Bearer ${token}` },
         data: { userId: currentUserId },
       });
@@ -1483,7 +1484,7 @@ export default function PostDetail() {
 
     try {
       await axios.delete(
-        `http://localhost:8001/post/${id}`,
+        `${API_BASE_URL}/post/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert("Post deleted successfully!");
@@ -1505,7 +1506,7 @@ export default function PostDetail() {
     setSummaryError(null);
     try {
       const res = await axios.post(
-        `http://localhost:8001/post/${id}/summarize`,
+        `${API_BASE_URL}/post/${id}/summarize`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import API_BASE_URL from "../config/apiConfig";
 
 const style = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -162,7 +163,7 @@ const resolveImageSrc = (image) => {
   if (image.startsWith("http://") || image.startsWith("https://") || image.startsWith("data:")) {
     return image;
   }
-  return `http://localhost:8001${image.startsWith("/") ? image : "/" + image}`;
+  return `${API_BASE_URL}${image.startsWith("/") ? image : "/" + image}`;
 };
 
 const EditPost = () => {
@@ -191,7 +192,7 @@ const EditPost = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await axios.get(`http://localhost:8001/post/${id}`, {
+        const res = await axios.get(`${API_BASE_URL}/post/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = res.data;
@@ -292,7 +293,7 @@ const EditPost = () => {
         formData.append("removeImage", "true");
       }
 
-      await axios.put(`http://localhost:8001/post/${id}`, formData, {
+      await axios.put(`${API_BASE_URL}/post/${id}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

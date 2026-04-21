@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import API_BASE_URL from "../config/apiConfig";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +30,7 @@ export default function Navbar() {
       const storedUser = JSON.parse(localStorage.getItem("user") || "null");
       setUser(storedUser);
 
-      axios.get("http://localhost:8001/auth/profile", {
+      axios.get(`${API_BASE_URL}/auth/profile`, {
         headers: { Authorization: `Bearer ${storedToken}` }
       }).then(res => {
         setUser(res.data.user);
@@ -381,7 +382,7 @@ export default function Navbar() {
               <span className="nav-user-name">{user?.name?.split(" ")[0]}</span>
               <div className="nav-avatar-circle">
                 {user?.profilePic ? (
-                  <img src={`http://localhost:8001${user.profilePic}`} className="nav-avatar-img" alt="Profile" />
+                  <img src={`${API_BASE_URL}${user.profilePic}`} className="nav-avatar-img" alt="Profile" />
                 ) : (
                   <span className="nav-initials">{initials(user?.name)}</span>
                 )}

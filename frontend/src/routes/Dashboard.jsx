@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import AnimatedModal from "../components/modal/AnimatedModal";
 import CreatePostForm from "../components/modal/CreatePostForm";
 import CropModal from "../components/modal/CropModal";
+import API_BASE_URL from "../config/apiConfig";
 
 const style = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -597,17 +598,17 @@ const Dashboard = () => {
     const token = localStorage.getItem("token");
     if (!token) return navigate("/login");
     try {
-      const res = await axios.get("http://localhost:8001/auth/profile", {
+      const res = await axios.get(`${API_BASE_URL}/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(res.data.user || {});
       setPosts(res.data.posts || []);
 
       if (res.data.user?.profilePic) {
-        setPreviewUrl(`http://localhost:8001${res.data.user.profilePic}`);
+        setPreviewUrl(`${API_BASE_URL}${res.data.user.profilePic}`);
       }
       if (res.data.user?.backgroundImage) {
-        setPreviewBgUrl(`http://localhost:8001${res.data.user.backgroundImage}`);
+        setPreviewBgUrl(`${API_BASE_URL}${res.data.user.backgroundImage}`);
       }
     } catch (err) {
       console.error(err.response?.data || err.message);
@@ -677,7 +678,7 @@ const Dashboard = () => {
       uploadingSetter(true);
       previewSetter(croppedUrl); // Show preview immediately
 
-      const res = await axios.post(`http://localhost:8001/auth/${apiPath}`, formData, {
+      const res = await axios.post(`${API_BASE_URL}/auth/${apiPath}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data"
@@ -718,7 +719,7 @@ const Dashboard = () => {
     const token = localStorage.getItem("token");
     if (!window.confirm("Are you sure you want to delete this post?")) return;
     try {
-      await axios.delete(`http://localhost:8001/post/${id}`, {
+      await axios.delete(`${API_BASE_URL}/post/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPosts((prev) => prev.filter((p) => p._id !== id));
@@ -769,7 +770,7 @@ const Dashboard = () => {
           >
             {previewBgUrl || user?.backgroundImage ? (
               <img
-                src={previewBgUrl ? previewBgUrl : `http://localhost:8001${user.backgroundImage}`}
+                src={previewBgUrl ? previewBgUrl : `${API_BASE_URL}${user.backgroundImage}`}
                 className="profile-bg-image"
                 alt="Background"
               />

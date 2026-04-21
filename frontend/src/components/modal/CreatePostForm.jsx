@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import axios from "axios";
+import API_BASE_URL from "../../config/apiConfig";
 
 // Reuse styles similar to EditPost but scoped to modal
 const formStyle = `
@@ -89,16 +90,12 @@ const CreatePostForm = ({ onClose, onPostCreated }) => {
         formData.append("imageUrl", imageUrl);
       }
 
-      const res = await axios.post(
-        "http://localhost:8001/post/create",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const res = await axios.post(`${API_BASE_URL}/post`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       onPostCreated(res.data.post);
       setDoneStatus(statusRef.current);

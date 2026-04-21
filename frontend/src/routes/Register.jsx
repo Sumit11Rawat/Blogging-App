@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import API_BASE_URL from "../config/apiConfig";
 
 const style = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
@@ -184,10 +185,7 @@ export default function RegisterPage() {
       password: form.password,
     };
     try {
-      const res = await axios.post(
-        "http://localhost:8001/auth/signup",
-        payload
-      );
+      const res = await axios.post(`${API_BASE_URL}/auth/register`, payload);
       // console.log(res.data);
         
       toast.success("Registration successful 🎉");

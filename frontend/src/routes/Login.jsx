@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import API_BASE_URL from "../config/apiConfig";
 
 const style = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
@@ -224,10 +225,7 @@ export default function LoginPage() {
       password:form.password,
     }
     try {
-      const res = await axios.post(
-        "http://localhost:8001/auth/login",
-        payload
-      );
+      const res = await axios.post(`${API_BASE_URL}/auth/login`, payload);
 
       // ✅ store token and user info (if backend sends it)
       if (res.data.token) {

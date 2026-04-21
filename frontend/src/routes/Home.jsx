@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../config/apiConfig";
 import Sidebar from "../components/Sidebar";
 
 const homeStyle = `
@@ -869,7 +870,7 @@ export default function HomePage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await axios.get("http://localhost:8001/post/");
+        const res = await axios.get(`${API_BASE_URL}/post/`);
         const published = (res.data || []).filter(p => p.status === "published");
         setPosts(published);
       } catch (err) {
@@ -887,7 +888,7 @@ export default function HomePage() {
       return image;
     }
     const normalizedPath = image.startsWith("/") ? image : `/${image}`;
-    return `http://localhost:8001${normalizedPath}`;
+    return `${API_BASE_URL}${normalizedPath}`;
   };
 
   /* ── filtering logic ── */

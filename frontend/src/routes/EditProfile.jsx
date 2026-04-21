@@ -1,8 +1,9 @@
 // src/routes/EditProfile.jsx
-import { useState, useEffect, useRef, useCallback } from "react"; // ✅ Added useCallback
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import CropModal from "../components/modal/CropModal";
+import API_BASE_URL from "../config/apiConfig";
 
 const style = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -359,7 +360,7 @@ const EditProfile = () => {
       const token = localStorage.getItem("token");
       if (!token) return navigate("/login", { state: { from: location.pathname } });
       try {
-        const res = await axios.get("http://localhost:8001/auth/profile", {
+        const res = await axios.get(`${API_BASE_URL}/auth/profile`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const user = res.data.user || {};
@@ -368,8 +369,8 @@ const EditProfile = () => {
           location: user.location || "", website: user.website || "",
           profilePicFile: null, backgroundImageFile: null
         });
-        if (user.profilePic) setProfilePreview(`http://localhost:8001${user.profilePic}`);
-        if (user.backgroundImage) setBgPreview(`http://localhost:8001${user.backgroundImage}`);
+        if (user.profilePic) setProfilePreview(`${API_BASE_URL}${user.profilePic}`);
+        if (user.backgroundImage) setBgPreview(`${API_BASE_URL}${user.backgroundImage}`);
       } catch (err) {
         console.error("Fetch error:", err);
         setError("Failed to load profile. Please try again.");
@@ -392,9 +393,7 @@ const EditProfile = () => {
     if (error) setError("");
   };
 
-  // ✅ FIX #1: Wrap in useCallback with empty deps for stable reference
   const handleImageSelect = useCallback((e, type) => {
-    console.log(`[EditProfile] handleImageSelect called for ${type}`);
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -407,27 +406,24 @@ const EditProfile = () => {
     }
     const reader = new FileReader();
     reader.onloadend = () => {
-      console.log(`[EditProfile] FileReader loaded, setting cropType=${type}`);
       setCropType(type);
-      setCropImageSrc(reader.result); // ✅ This triggers CropModal render
+      setCropImageSrc(reader.result);
     };
     reader.onerror = () => alert('Failed to read image. Please try again.');
     reader.readAsDataURL(file);
-    e.target.value = ""; // Reset to allow re-selecting same file
-  }, []); // ✅ Empty deps = function never changes
+    e.target.value = "";
+  }, []);
 
-  // ✅ FIX #2: Wrap in useCallback with cropType dependency
   const handleCropComplete = useCallback(async (croppedBlob, croppedUrl) => {
-    console.log(`[EditProfile] handleCropComplete: type=${cropType}`);
-    setCropImageSrc(null); // Close modal
-    const type = cropType; // Capture current value
+    setCropImageSrc(null);
+    const type = cropType;
     const previewSetter = type === 'profile' ? setProfilePreview : setBgPreview;
     previewSetter(croppedUrl);
     setFormData(prev => ({
       ...prev,
       [type === 'profile' ? 'profilePicFile' : 'backgroundImageFile']: croppedBlob
     }));
-  }, [cropType]); // ✅ Include cropType to avoid stale closure
+  }, [cropType]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -441,7 +437,7 @@ const EditProfile = () => {
       if (formData.profilePicFile) {
         const imgForm = new FormData();
         imgForm.append('profilePic', formData.profilePicFile, 'avatar.jpg');
-        const res = await axios.post("http://localhost:8001/auth/profile-pic", imgForm, {
+        const res = await axios.post(`${API_BASE_URL}/auth/profile-pic`, imgForm, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" }
         });
         profilePicPath = res.data.profilePic;
