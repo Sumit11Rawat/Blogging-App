@@ -179,22 +179,28 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({}); // clear errors if valid
+
     const payload = {
       name: form.firstName + " " + form.lastName,
       email: form.email,
       password: form.password,
     };
     try {
-      const res = await axios.post(`${API_BASE_URL}/auth/register`, payload);
-      // console.log(res.data);
-        
+      const res = await axios.post(`${API_BASE_URL}/auth/signup`, payload);
+      setSuccess(true);
       toast.success("Registration successful 🎉");
-      // console.log(res.data);
-      // alert(res.data.message);
       setTimeout(() => {
         navigate("/login");
-      }, 600);
+      }, 1500);
     } catch (error) {
+      toast.error(error.response?.data?.message || "Registration failed");
       console.error(error.response?.data || error.message);
     }
   };
