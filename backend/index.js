@@ -8,8 +8,8 @@ const cors = require("cors");
 const port = process.env.PORT;
 const mongoURI = process.env.MONGO_URI;
 
-const authRoutes = require("../routes/auth");
-const postRoutes = require("../routes/post");
+const authRoutes = require("./routes/auth");
+const postRoutes = require("./routes/post");
 
 const app = express();
 
@@ -22,7 +22,7 @@ app.use(cors({
   credentials: true
 }));
 
-mongoose.connect(mongoURI) .then(() => console.log("MongoDB connected"));
+mongoose.connect(mongoURI).then(() => console.log("MongoDB connected"));
 
 // 🔹 Diagnostic Root Route
 app.get("/", (req, res) => {
@@ -32,9 +32,9 @@ app.get("/", (req, res) => {
 // 🔹 Routes
 app.use("/auth", authRoutes);
 
-app.use("/post",(req,res,next)=>{
+app.use("/post", (req, res, next) => {
   next();
-},postRoutes)
+}, postRoutes)
 app.use("/uploads", express.static("uploads"));
 // server.js
 // app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

@@ -90,7 +90,7 @@ const CreatePostForm = ({ onClose, onPostCreated }) => {
         formData.append("imageUrl", imageUrl);
       }
 
-      const res = await axios.post(`${API_BASE_URL}/post`, formData, {
+      const res = await axios.post(`${API_BASE_URL}/post/create`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

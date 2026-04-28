@@ -124,7 +124,7 @@ router.post("/profile-pic", verifyToken, upload.single("profilePic"), async (req
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-    const profilePicPath = `/uploads/${req.file.filename}`;
+    const profilePicPath = req.file.path;
     await User.findByIdAndUpdate(req.user.id, { profilePic: profilePicPath });
     res.json({ message: "Profile picture updated", profilePic: profilePicPath });
   } catch (err) {
@@ -138,7 +138,7 @@ router.post("/background-image", verifyToken, upload.single("backgroundImage"), 
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-    const bgPath = `/uploads/${req.file.filename}`;
+    const bgPath = req.file.path;
     await User.findByIdAndUpdate(req.user.id, { backgroundImage: bgPath });
     res.json({ message: "Background image updated", backgroundImage: bgPath });
   } catch (err) {

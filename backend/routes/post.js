@@ -98,7 +98,7 @@ router.post(
 
       let finalImageUrl = "";
       if (req.file) {
-        finalImageUrl = `/uploads/${req.file.filename}`;
+        finalImageUrl = req.file.path;
       } else if (imageUrl) {
         finalImageUrl = imageUrl;
       } else if (req.body.image) {
@@ -213,7 +213,7 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
     if (removeImage === "true") {
       post.image = "";
     } else if (req.file) {
-      post.image = `/uploads/${req.file.filename}`;
+      post.image = req.file.path;
     } else if (imageUrl && imageUrl.trim() !== "") {
       post.image = imageUrl.trim();
     }
