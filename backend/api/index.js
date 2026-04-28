@@ -8,8 +8,8 @@ const cors = require("cors");
 const port = process.env.PORT;
 const mongoURI = process.env.MONGO_URI;
 
-const authRoutes = require("./routes/auth");
-const postRoutes = require("./routes/post");
+const authRoutes = require("../routes/auth");
+const postRoutes = require("../routes/post");
 
 const app = express();
 
