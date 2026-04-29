@@ -98,7 +98,7 @@ const style = `
   /* ── BACKGROUND IMAGE CONTAINER ── */
   .profile-bg-container {
     position: relative;
-    width: 100%;
+    width: calc(100% + 48px);
     height: 140px;
     border-radius: 24px 24px 0 0;
     overflow: hidden;
@@ -493,7 +493,7 @@ const style = `
     .welcome-title { font-size: 24px; }
     
     .profile-state { margin: 0 0 24px 0; width: 100%; padding: 12px 16px 20px; border-radius: 20px; }
-    .profile-bg-container { height: 110px; margin: -12px -16px 0 -16px; border-radius: 20px 20px 0 0; }
+    .profile-bg-container { width: calc(100% + 32px); height: 110px; margin: -12px -16px 0 -16px; border-radius: 20px 20px 0 0; }
     .profile-header { margin-top: -28px; gap: 12px; }
     .avatar-container { width: 52px; height: 52px; border-width: 2px; }
     .dash-user-name { font-size: 16px; }
