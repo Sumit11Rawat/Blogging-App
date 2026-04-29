@@ -382,7 +382,7 @@ export default function Navbar() {
               <span className="nav-user-name">{user?.name?.split(" ")[0]}</span>
               <div className="nav-avatar-circle">
                 {user?.profilePic ? (
-                  <img src={`${API_BASE_URL}${user.profilePic}`} className="nav-avatar-img" alt="Profile" />
+                  <img src={user.profilePic.startsWith("http") || user.profilePic.startsWith("data:") ? user.profilePic : `${API_BASE_URL}${user.profilePic.startsWith("/") ? user.profilePic : `/${user.profilePic}`}`} className="nav-avatar-img" alt="Profile" />
                 ) : (
                   <span className="nav-initials">{initials(user?.name)}</span>
                 )}

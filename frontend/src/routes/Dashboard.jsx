@@ -605,10 +605,12 @@ const Dashboard = () => {
       setPosts(res.data.posts || []);
 
       if (res.data.user?.profilePic) {
-        setPreviewUrl(`${API_BASE_URL}${res.data.user.profilePic}`);
+        const pic = res.data.user.profilePic;
+        setPreviewUrl(pic.startsWith("http") || pic.startsWith("data:") ? pic : `${API_BASE_URL}${pic.startsWith("/") ? pic : `/${pic}`}`);
       }
       if (res.data.user?.backgroundImage) {
-        setPreviewBgUrl(`${API_BASE_URL}${res.data.user.backgroundImage}`);
+        const bg = res.data.user.backgroundImage;
+        setPreviewBgUrl(bg.startsWith("http") || bg.startsWith("data:") ? bg : `${API_BASE_URL}${bg.startsWith("/") ? bg : `/${bg}`}`);
       }
     } catch (err) {
       console.error(err.response?.data || err.message);
@@ -692,9 +694,11 @@ const Dashboard = () => {
       alert(`❌ Failed to upload ${type}. Please try again.`);
       // Revert preview on error
       if (type === 'profile' && user?.profilePic) {
-        setPreviewUrl(`http://localhost:8001${user.profilePic}`);
+        const pic = user.profilePic;
+        setPreviewUrl(pic.startsWith("http") || pic.startsWith("data:") ? pic : `${API_BASE_URL}${pic.startsWith("/") ? pic : `/${pic}`}`);
       } else if (type === 'background' && user?.backgroundImage) {
-        setPreviewBgUrl(`http://localhost:8001${user.backgroundImage}`);
+        const bg = user.backgroundImage;
+        setPreviewBgUrl(bg.startsWith("http") || bg.startsWith("data:") ? bg : `${API_BASE_URL}${bg.startsWith("/") ? bg : `/${bg}`}`);
       } else {
         previewSetter(null);
       }
@@ -770,7 +774,7 @@ const Dashboard = () => {
           >
             {previewBgUrl || user?.backgroundImage ? (
               <img
-                src={previewBgUrl ? previewBgUrl : `${API_BASE_URL}${user.backgroundImage}`}
+                src={previewBgUrl ? previewBgUrl : (user.backgroundImage.startsWith("http") || user.backgroundImage.startsWith("data:") ? user.backgroundImage : `${API_BASE_URL}${user.backgroundImage.startsWith("/") ? user.backgroundImage : `/${user.backgroundImage}`}`)}
                 className="profile-bg-image"
                 alt="Background"
               />

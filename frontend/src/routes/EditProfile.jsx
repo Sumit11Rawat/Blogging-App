@@ -369,8 +369,8 @@ const EditProfile = () => {
           location: user.location || "", website: user.website || "",
           profilePicFile: null, backgroundImageFile: null
         });
-        if (user.profilePic) setProfilePreview(`${API_BASE_URL}${user.profilePic}`);
-        if (user.backgroundImage) setBgPreview(`${API_BASE_URL}${user.backgroundImage}`);
+        if (user.profilePic) setProfilePreview(user.profilePic.startsWith("http") || user.profilePic.startsWith("data:") ? user.profilePic : `${API_BASE_URL}${user.profilePic.startsWith("/") ? user.profilePic : `/${user.profilePic}`}`);
+        if (user.backgroundImage) setBgPreview(user.backgroundImage.startsWith("http") || user.backgroundImage.startsWith("data:") ? user.backgroundImage : `${API_BASE_URL}${user.backgroundImage.startsWith("/") ? user.backgroundImage : `/${user.backgroundImage}`}`);
       } catch (err) {
         console.error("Fetch error:", err);
         setError("Failed to load profile. Please try again.");
