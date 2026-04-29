@@ -445,7 +445,7 @@ const EditProfile = () => {
       if (formData.backgroundImageFile) {
         const imgForm = new FormData();
         imgForm.append('backgroundImage', formData.backgroundImageFile, 'cover.jpg');
-        const res = await axios.post("http://localhost:8001/auth/background-image", imgForm, {
+        const res = await axios.post(`${API_BASE_URL}/auth/background-image`, imgForm, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" }
         });
         bgPath = res.data.backgroundImage;
@@ -455,7 +455,7 @@ const EditProfile = () => {
         ...(profilePicPath && { profilePic: profilePicPath }),
         ...(bgPath && { backgroundImage: bgPath })
       };
-      await axios.put("http://localhost:8001/auth/profile", updateData, {
+      await axios.put(`${API_BASE_URL}/auth/profile`, updateData, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
       });
       setSuccess(true);
