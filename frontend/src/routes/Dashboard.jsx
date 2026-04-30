@@ -726,7 +726,11 @@ const initials = (name = "") =>
       bg: "#ecfdf5", 
       label: "Total Posts", 
       value: posts.length,
-      subValue: `${publishedCount} Published · ${draftCount} Drafts`
+      isTotal: true,
+      breakdown: [
+        { label: "Published", value: publishedCount, icon: "✅", bg: "#f0fdf4" },
+        { label: "Drafts", value: draftCount, icon: "📬", bg: "#fdf4ff" }
+      ]
     },
     { icon: "👥", bg: "#fff7ed", label: "Followers", value: user?.followers?.length || 0, clickable: true, type: "followers" },
     { icon: "🤝", bg: "#eff6ff", label: "Following", value: user?.following?.length || 0, clickable: true, type: "following" },
@@ -858,24 +862,47 @@ const initials = (name = "") =>
 
           <div className="stats-row">
             {stats.map((s) => (
-              <div 
-                className={`stat-card ${s.clickable ? 'clickable' : ''}`} 
-                key={s.label}
-                onClick={() => {
-                  if (s.clickable) {
-                    setConnectionType(s.type);
-                    setShowConnections(true);
-                  }
-                }}
-                style={{ cursor: s.clickable ? 'pointer' : 'default' }}
-              >
-                <div className="stat-icon" style={{ background: s.bg }}>{s.icon}</div>
-                <div className="stat-content">
-                  <div className="stat-label">{s.label}</div>
-                  <div className="stat-value">{s.value}</div>
-                  {s.subValue && <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>{s.subValue}</div>}
+              s.isTotal ? (
+                <div className="stat-card total-card" key={s.label} style={{ flex: '2', minWidth: '240px', display: 'block' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                    <div className="stat-icon" style={{ background: s.bg }}>{s.icon}</div>
+                    <div className="stat-content">
+                      <div className="stat-label">{s.label}</div>
+                      <div className="stat-value">{s.value}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {s.breakdown.map(b => (
+                      <div key={b.label} style={{ flex: 1, padding: '8px 12px', background: b.bg, borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(0,0,0,0.02)' }}>
+                        <span style={{ fontSize: '14px' }}>{b.icon}</span>
+                        <div>
+                          <div style={{ fontSize: '9px', color: '#6b7280', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.02em' }}>{b.label}</div>
+                          <div style={{ fontSize: '13px', fontWeight: '700', color: '#111827' }}>{b.value}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div 
+                  className={`stat-card ${s.clickable ? 'clickable' : ''}`} 
+                  key={s.label}
+                  onClick={() => {
+                    if (s.clickable) {
+                      setConnectionType(s.type);
+                      setShowConnections(true);
+                    }
+                  }}
+                  style={{ cursor: s.clickable ? 'pointer' : 'default' }}
+                >
+                  <div className="stat-icon" style={{ background: s.bg }}>{s.icon}</div>
+                  <div className="stat-content">
+                    <div className="stat-label">{s.label}</div>
+                    <div className="stat-value">{s.value}</div>
+                    {s.subValue && <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>{s.subValue}</div>}
+                  </div>
+                </div>
+              )
             ))}
           </div>
         </div>
