@@ -908,6 +908,39 @@ const postDetailStyle = `
     box-shadow: 0 6px 16px rgba(178,34,34,0.4);
   }
 
+  .follow-btn {
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 1px solid var(--gold);
+    background: transparent;
+    color: var(--gold);
+    margin-left: 12px;
+  }
+  .follow-btn:hover:not(:disabled) {
+    background: var(--gold);
+    color: white;
+  }
+  .follow-btn.following {
+    background: var(--gold);
+    color: white;
+  }
+  .follow-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #d1d5db;
+    color: #9ca3af;
+  }
+  .follower-count {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 8px;
+    font-weight: 500;
+  }
+
   @media (max-width: 1024px) {
     .post-layout-container {
       flex-direction: column;
@@ -1189,6 +1222,35 @@ export default function PostDetail() {
 
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [currentAudio, setCurrentAudio] = useState(null);
+
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+
+  useEffect(() => {
+    if (post && post.author) {
+      const authorFollowers = post.author.followers || [];
+      setIsFollowing(authorFollowers.some(uid => String(uid) === String(currentUserId)));
+      setFollowerCount(authorFollowers.length);
+    }
+  }, [post, currentUserId]);
+
+  const handleFollow = async () => {
+    if (!isLoggedIn) {
+      alert("Please login to follow authors");
+      return;
+    }
+    try {
+      const authorId = post.author?._id || post.author;
+      const res = await axios.post(`${API_BASE_URL}/auth/follow/${authorId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setIsFollowing(res.data.isFollowing);
+      setFollowerCount(prev => res.data.isFollowing ? prev + 1 : prev - 1);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to follow/unfollow");
+    }
+  };
 
   const findCommentInTree = useCallback((comments, commentId) => {
     for (let cmt of comments) {
@@ -1657,6 +1719,15 @@ export default function PostDetail() {
                 <div className="post-meta">
                   <div className="post-meta-main">
                     <span className="post-author-name">By <strong>{post.author?.name || "Anonymous"}</strong></span>
+                    <button 
+                      onClick={handleFollow} 
+                      className={`follow-btn ${isFollowing ? 'following' : ''}`}
+                      disabled={String(post.author?._id || "") === String(currentUserId)}
+                      type="button"
+                    >
+                      {isFollowing ? 'Following' : 'Follow'}
+                    </button>
+                    <span className="follower-count">{followerCount} followers</span>
                     <span className="meta-dot">·</span>
                     <span>{formatDate(post.createdAt)}</span>
                     <span className="meta-dot">·</span>

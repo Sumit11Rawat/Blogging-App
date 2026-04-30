@@ -161,4 +161,39 @@ router.put("/profile", verifyToken, async (req, res) => {
   }
 });
 
+// FOLLOW / UNFOLLOW USER
+router.post("/follow/:id", verifyToken, async (req, res) => {
+  try {
+    const userToFollowId = req.params.id;
+    const currentUserId = req.user.id;
+
+    if (userToFollowId === currentUserId) {
+      return res.status(400).json({ message: "You cannot follow yourself" });
+    }
+
+    const userToFollow = await User.findById(userToFollowId);
+    const currentUser = await User.findById(currentUserId);
+
+    if (!userToFollow) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isFollowing = currentUser.following.includes(userToFollowId);
+
+    if (isFollowing) {
+      // Unfollow
+      await User.findByIdAndUpdate(currentUserId, { $pull: { following: userToFollowId } });
+      await User.findByIdAndUpdate(userToFollowId, { $pull: { followers: currentUserId } });
+      res.json({ message: "Unfollowed successfully", isFollowing: false });
+    } else {
+      // Follow
+      await User.findByIdAndUpdate(currentUserId, { $addToSet: { following: userToFollowId } });
+      await User.findByIdAndUpdate(userToFollowId, { $addToSet: { followers: currentUserId } });
+      res.json({ message: "Followed successfully", isFollowing: true });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Error following/unfollowing user" });
+  }
+});
+
 module.exports = router;

@@ -715,8 +715,8 @@ const Dashboard = () => {
 
   const stats = [
     { icon: "📝", bg: "#ecfdf5", label: "Total Posts", value: posts.length },
-    { icon: "✅", bg: "#eff6ff", label: "Published", value: posts.filter(p => p.status === "published").length },
-    { icon: "📬", bg: "#fdf4ff", label: "Drafts", value: posts.filter(p => p.status === "draft").length },
+    { icon: "👥", bg: "#fff7ed", label: "Followers", value: user?.followers?.length || 0 },
+    { icon: "🤝", bg: "#f0fdf4", label: "Following", value: user?.following?.length || 0 },
   ];
 
   const handleDelete = async (id) => {

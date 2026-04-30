@@ -126,7 +126,7 @@ router.post(
       await post.save();
 
       const populatedPost = await Post.findById(post._id)
-        .populate("author", "name email avatar");
+        .populate("author", "name email profilePic followers");
 
       res.status(201).json({
         message: "Post created successfully",
@@ -151,7 +151,7 @@ router.get("/:id", async (req, res) => {
     }
 
     const post = await Post.findById(req.params.id)
-      .populate("author", "name email avatar");
+      .populate("author", "name email profilePic followers");
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
@@ -220,7 +220,7 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
 
     const updatedPost = await post.save();
     const populated = await Post.findById(updatedPost._id)
-      .populate("author", "name email avatar");
+      .populate("author", "name email profilePic followers");
 
     res.json(populated);
 
