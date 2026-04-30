@@ -978,11 +978,15 @@ const postDetailStyle = `
       padding: 12px 0 12px 16px; 
     }
     
-    .post-meta { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .post-meta { flex-direction: column; align-items: flex-start; gap: 8px; }
     .post-actions-meta { width: 100%; justify-content: space-between; }
-    .btn-delete-post { margin-left: 0; padding: 10px; width: auto; font-size: 12px; }
+    .btn-delete-post { margin-left: 0; padding: 10px; width: auto; font-size: 11px; }
     
-    .post-title { font-size: 32px; margin-bottom: 16px; }
+    .post-title { font-size: 26px; margin-bottom: 12px; }
+    .post-content { font-size: 15px; line-height: 1.7; }
+    .post-author-name { font-size: 13px; }
+    .follower-count { font-size: 10px; }
+    .follow-btn { padding: 4px 12px; font-size: 11px; }
     .comments-section { margin: 40px -20px -32px; padding: 32px 20px; }
   }
 `;

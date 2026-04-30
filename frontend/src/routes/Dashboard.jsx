@@ -489,18 +489,21 @@ const style = `
 
   @media (max-width: 768px) {
     .dash-root { padding: 16px 16px 40px; }
-    .dashboard-title { font-size: 32px; }
-    .welcome-title { font-size: 24px; }
+    .dashboard-title { font-size: 26px; }
+    .welcome-title { font-size: 20px; }
+    .welcome-sub { font-size: 11px; }
     
     .profile-state { margin: 0 0 24px 0; width: 100%; padding: 12px 16px 20px; border-radius: 20px; }
     .profile-bg-container { width: calc(100% + 32px); height: 110px; margin: -12px -16px 0 -16px; border-radius: 20px 20px 0 0; }
     .profile-header { margin-top: -28px; gap: 12px; }
     .avatar-container { width: 52px; height: 52px; border-width: 2px; }
-    .dash-user-name { font-size: 16px; }
+    .dash-user-name { font-size: 15px; }
+    .dash-user-email { font-size: 11px; }
     .profile-edit-btn { top: 112px; right: 20px; transform: none; width: 34px; height: 34px; font-size: 14px; }
     
-    .stat-card { min-width: 100%; padding: 12px; }
-    .stat-value { font-size: 16px; }
+    .stat-card { min-width: 100%; padding: 10px 14px; }
+    .stat-label { font-size: 11px; }
+    .stat-value { font-size: 15px; }
     
     .section { padding: 20px 16px; margin: 0 0 24px 0; }
     .section-title { font-size: 22px; }
