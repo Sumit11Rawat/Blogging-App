@@ -1001,7 +1001,7 @@ export default function HomePage() {
                       {post.image ? (
                         <img src={getImageSrc(post.image)} alt={post.title} onError={(e) => { e.target.style.display = "none"; e.target.parentNode.innerHTML = '<div class="post-card-image-placeholder"><div class="placeholder-icon">🖼️</div><div class="placeholder-text">Image unavailable</div></div>'; }} />
                       ) : (
-                        <div className="post-card-image-placeholder"><div class="placeholder-icon">✍️</div><div class="placeholder-text">No cover image</div></div>
+                        <div className="post-card-image-placeholder"><div className="placeholder-icon">✍️</div><div className="placeholder-text">No cover image</div></div>
                       )}
                     </div>
                     <div className="post-card-body">

@@ -6,7 +6,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 router.post("/improve", verifyToken, async (req, res) => {
   try {
     const { content } = req.body;
-    
+
     if (!content) {
       return res.status(400).json({ message: "Content is required" });
     }
@@ -17,7 +17,7 @@ router.post("/improve", verifyToken, async (req, res) => {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `You are an expert copywriter and editor. Your task is to take the following blog post draft and improve its grammar, tone, flow, and readability while maintaining the original meaning and author's voice. 
 Do NOT add any introductory or concluding conversational text (like "Here is the improved version"). Return ONLY the improved text.
