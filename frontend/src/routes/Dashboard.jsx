@@ -70,30 +70,32 @@ const style = `
 
   .profile-edit-btn {
     position: absolute;
-    top: calc(60% - 7px);
+    top: 24px;
     right: 24px;
-    left: auto;
-    width: 38px;
-    height: 38px;
+    padding: 8px 16px;
     border-radius: 12px;
-    background: rgba(178, 34, 34, 0.06);
-    border: 1px solid rgba(178, 34, 34, 0.15);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    border: 1.5px solid rgba(178, 34, 34, 0.2);
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 16px;
+    gap: 8px;
+    color: #B22222;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 10;
-    transform: translateY(-50%);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   }
   .profile-edit-btn:hover {
-    background: rgba(178, 34, 34, 0.12);
-    border-color: rgba(178, 34, 34, 0.3);
-    transform: scale(1.05) translateY(-52%);
-    box-shadow: 0 6px 16px rgba(178, 34, 34, 0.18);
+    background: #ffffff;
+    border-color: #B22222;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(178, 34, 34, 0.15);
   }
-  .profile-edit-btn:active { transform: scale(0.95) translateY(-50%); }
+  .profile-edit-btn:active { transform: translateY(0) scale(0.96); }
 
   /* ── BACKGROUND IMAGE CONTAINER ── */
   .profile-bg-container {
@@ -104,7 +106,6 @@ const style = `
     overflow: hidden;
     background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
     margin: -20px -24px 0 -24px;
-    cursor: pointer;
   }
 
   .profile-bg-image {
@@ -114,22 +115,7 @@ const style = `
     transition: transform 0.3s ease;
   }
 
-  .profile-bg-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 500;
-  }
-
-  .profile-bg-container:hover .profile-bg-overlay { opacity: 1; }
-  .profile-bg-container:hover .profile-bg-image { transform: scale(1.03); }
+  .profile-bg-container:hover .profile-bg-image { transform: scale(1.02); }
 
   .profile-header {
     display: flex;
@@ -149,7 +135,6 @@ const style = `
     background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
     border: 3px solid #fff;
     box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-    cursor: pointer;
     flex-shrink: 0;
   }
 
@@ -171,20 +156,7 @@ const style = `
     background: #f3f4f6;
   }
 
-  .avatar-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: 0.2s;
-    color: #fff;
-    font-size: 18px;
-  }
-
-  .avatar-container:hover .avatar-overlay { opacity: 1; }
+  /* Avatar overlay removed */
 
   .user-info-dash {
     display: flex;
@@ -499,7 +471,7 @@ const style = `
     .avatar-container { width: 52px; height: 52px; border-width: 2px; }
     .dash-user-name { font-size: 15px; }
     .dash-user-email { font-size: 11px; }
-    .profile-edit-btn { top: 112px; right: 20px; transform: none; width: 34px; height: 34px; font-size: 14px; }
+    .profile-edit-btn { top: 12px; right: 12px; padding: 6px 12px; font-size: 12px; }
     
     .stat-card { min-width: 100%; padding: 10px 14px; }
     .stat-label { font-size: 11px; }
@@ -775,23 +747,12 @@ const initials = (name = "") =>
             aria-label="Edit profile details"
             title="Edit profile"
           >
-            ✏️
+            <span>✏️</span>
+            <span>Edit Profile</span>
           </button>
 
           {/* 🖼️ Background Image Section */}
-          <div
-            className="profile-bg-container"
-            onClick={() => bgInputRef.current?.click()}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                bgInputRef.current?.click();
-              }
-            }}
-            aria-label="Change cover photo"
-          >
+          <div className="profile-bg-container">
             {previewBgUrl || user?.backgroundImage ? (
               <img
                 src={previewBgUrl ? previewBgUrl : (user.backgroundImage.startsWith("http") || user.backgroundImage.startsWith("data:") ? user.backgroundImage : `${API_BASE_URL}${user.backgroundImage.startsWith("/") ? user.backgroundImage : `/${user.backgroundImage}`}`)}
@@ -811,9 +772,7 @@ const initials = (name = "") =>
                 + Add Cover Photo
               </div>
             )}
-            <div className="profile-bg-overlay">
-              {uploadingBg ? "⏳" : "📸 Change Cover"}
-            </div>
+            {/* Upload overlay removed */}
             <input
               type="file"
               ref={bgInputRef}
@@ -826,27 +785,13 @@ const initials = (name = "") =>
           </div>
 
           <div className="profile-header">
-            <div
-              className="avatar-container"
-              onClick={() => fileInputRef.current?.click()}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  fileInputRef.current?.click();
-                }
-              }}
-              aria-label="Change profile picture"
-            >
+            <div className="avatar-container">
               {previewUrl ? (
                 <img src={previewUrl} className="avatar-img" alt="Profile" />
               ) : (
                 <div className="avatar-initials">{initials(user?.name)}</div>
               )}
-              <div className="avatar-overlay">
-                {uploading ? "⏳" : "📸 Crop"}
-              </div>
+              {/* Upload overlay removed */}
               <input
                 type="file"
                 ref={fileInputRef}

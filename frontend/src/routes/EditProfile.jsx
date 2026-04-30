@@ -499,24 +499,20 @@ const EditProfile = () => {
                 {/* Profile Picture */}
                 <div 
                   className="image-preview-item profile"
-                  onClick={() => {
-                    console.log('[EditProfile] Profile preview clicked');
-                    profileInputRef.current?.click();
-                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       profileInputRef.current?.click();
                     }
                   }}
-                  role="button" tabIndex={0} aria-label="Change profile picture"
+                  tabIndex={0} aria-label="Profile picture preview"
                 >
                   {profilePreview ? (
                     <img src={profilePreview} className="image-preview-img" alt="Profile preview" />
                   ) : (
                     <div className="image-preview-placeholder">{initials(formData.name)}</div>
                   )}
-                  <div className="image-preview-overlay">✏️</div>
+                  <div className="image-preview-overlay">🖼️</div>
                   <input
                     type="file" ref={profileInputRef}
                     onChange={(e) => {
@@ -529,24 +525,20 @@ const EditProfile = () => {
                 {/* Background Image */}
                 <div 
                   className="image-preview-item background"
-                  onClick={() => {
-                    console.log('[EditProfile] Background preview clicked');
-                    bgInputRef.current?.click();
-                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       bgInputRef.current?.click();
                     }
                   }}
-                  role="button" tabIndex={0} aria-label="Change cover photo"
+                  tabIndex={0} aria-label="Cover photo preview"
                 >
                   {bgPreview ? (
                     <img src={bgPreview} className="image-preview-img" alt="Background preview" />
                   ) : (
                     <div className="image-preview-placeholder">+ Cover</div>
                   )}
-                  <div className="image-preview-overlay">✏️</div>
+                  <div className="image-preview-overlay">🖼️</div>
                   <input
                     type="file" ref={bgInputRef}
                     onChange={(e) => {
