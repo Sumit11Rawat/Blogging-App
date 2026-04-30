@@ -268,6 +268,28 @@ const EditPost = () => {
     return false;
   };
 
+  const [improving, setImproving] = useState(false);
+
+  const handleImprove = async () => {
+    if (!post.content) {
+      alert("Please write some content first!");
+      return;
+    }
+    setImproving(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(`${API_BASE_URL}/ai/improve`, { content: post.content }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPost(prev => ({ ...prev, content: res.data.improvedContent }));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to improve content.");
+    } finally {
+      setImproving(false);
+    }
+  };
+
   // ── Update post ──
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -364,7 +386,7 @@ const EditPost = () => {
               </div>
 
               {/* Content */}
-              <div className="field-wrap">
+              <div className="field-wrap" style={{ position: "relative" }}>
                 <textarea
                   className="field-textarea"
                   value={post.content}
@@ -373,6 +395,30 @@ const EditPost = () => {
                   required
                 />
                 <label className="field-label">Content</label>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
+                  <button 
+                    type="button" 
+                    onClick={handleImprove}
+                    disabled={improving}
+                    style={{ 
+                      background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", 
+                      color: "#fff", 
+                      border: "none", 
+                      padding: "4px 10px", 
+                      borderRadius: "6px", 
+                      fontSize: "11px", 
+                      fontWeight: "600", 
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      transition: "0.2s opacity",
+                      opacity: improving ? 0.7 : 1
+                    }}>
+                    {improving ? "⏳ Improving..." : "✨ Improve with AI"}
+                  </button>
+                  <div style={{ fontSize: "11px", color: "#d1d5db" }}>{post.content.length} chars</div>
+                </div>
               </div>
 
               {/* Tags */}

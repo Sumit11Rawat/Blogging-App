@@ -10,6 +10,7 @@ const mongoURI = process.env.MONGO_URI;
 
 const authRoutes = require("../routes/auth");
 const postRoutes = require("../routes/post");
+const aiRoutes = require("../routes/ai");
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.get("/", (req, res) => {
 
 // 🔹 Routes
 app.use("/auth", authRoutes);
+app.use("/ai", aiRoutes);
 
 app.use("/post", (req, res, next) => {
   next();
