@@ -574,11 +574,15 @@ const style = `
 const initials = (name = "") =>
   (name?.split(" ").map((w) => w[0]).join("") || "U").toUpperCase().slice(0, 2);
 
-const Dashboard = () => {
+  const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const navigate = useNavigate();
   const [showCreate, setShowCreate] = useState(false);
+  
+  // Connections modal state
+  const [showConnections, setShowConnections] = useState(false);
+  const [connectionType, setConnectionType] = useState("followers"); // "followers" or "following"
 
   // Image upload states
   const [uploading, setUploading] = useState(false);
@@ -715,8 +719,10 @@ const Dashboard = () => {
 
   const stats = [
     { icon: "📝", bg: "#ecfdf5", label: "Total Posts", value: posts.length },
-    { icon: "👥", bg: "#fff7ed", label: "Followers", value: user?.followers?.length || 0 },
-    { icon: "🤝", bg: "#f0fdf4", label: "Following", value: user?.following?.length || 0 },
+    { icon: "👥", bg: "#fff7ed", label: "Followers", value: user?.followers?.length || 0, clickable: true, type: "followers" },
+    { icon: "🤝", bg: "#eff6ff", label: "Following", value: user?.following?.length || 0, clickable: true, type: "following" },
+    { icon: "✅", bg: "#f0fdf4", label: "Published", value: posts.filter(p => p.status === "published").length },
+    { icon: "📬", bg: "#fdf4ff", label: "Drafts", value: posts.filter(p => p.status === "draft").length },
   ];
 
   const handleDelete = async (id) => {
@@ -845,7 +851,17 @@ const Dashboard = () => {
 
           <div className="stats-row">
             {stats.map((s) => (
-              <div className="stat-card" key={s.label}>
+              <div 
+                className={`stat-card ${s.clickable ? 'clickable' : ''}`} 
+                key={s.label}
+                onClick={() => {
+                  if (s.clickable) {
+                    setConnectionType(s.type);
+                    setShowConnections(true);
+                  }
+                }}
+                style={{ cursor: s.clickable ? 'pointer' : 'default' }}
+              >
                 <div className="stat-icon" style={{ background: s.bg }}>{s.icon}</div>
                 <div className="stat-content">
                   <div className="stat-label">{s.label}</div>
@@ -952,6 +968,69 @@ const Dashboard = () => {
             />
           )}
         </AnimatedModal>
+      )}
+
+      {/* 👥 Connections Modal (Followers/Following) */}
+      {showConnections && (
+        <div className="modal-overlay entering" onClick={() => setShowConnections(false)}>
+          <div className="modal-card entering" style={{ width: "400px" }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <button className="modal-close-btn" onClick={() => setShowConnections(false)}>×</button>
+              <div className="modal-header-icon">{connectionType === "followers" ? "👥" : "🤝"}</div>
+              <div className="modal-header-title" style={{ textTransform: "capitalize" }}>{connectionType}</div>
+              <div className="modal-header-sub">People in your network</div>
+            </div>
+            <div className="modal-body" style={{ maxHeight: "400px" }}>
+              {(user[connectionType] || []).length === 0 ? (
+                <div style={{ textAlign: "center", color: "#9ca3af", padding: "20px" }}>
+                  No {connectionType} yet.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {user[connectionType].map((person) => (
+                    <div 
+                      key={person._id} 
+                      style={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        gap: "12px", 
+                        padding: "10px", 
+                        borderRadius: "10px",
+                        background: "#f9fafb",
+                        border: "1px solid #f3f4f6"
+                      }}
+                    >
+                      <div style={{ 
+                        width: "36px", 
+                        height: "36px", 
+                        borderRadius: "50%", 
+                        background: "linear-gradient(135deg, #B22222, #ff6b6b)", 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center",
+                        color: "white",
+                        fontSize: "12px",
+                        fontWeight: "600",
+                        overflow: "hidden"
+                      }}>
+                        {person.profilePic ? (
+                          <img 
+                            src={person.profilePic.startsWith("http") ? person.profilePic : `${API_BASE_URL}${person.profilePic.startsWith("/") ? person.profilePic : `/${person.profilePic}`}`} 
+                            alt={person.name} 
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                          />
+                        ) : (
+                          initials(person.name)
+                        )}
+                      </div>
+                      <div style={{ fontSize: "14px", fontWeight: "600", color: "#111827" }}>{person.name}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* 🔥 Crop Modal */}

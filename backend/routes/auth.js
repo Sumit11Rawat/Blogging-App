@@ -106,11 +106,12 @@ router.post("/login", async (req, res) => {
 // PROTECTED ROUTE
 router.get("/profile", verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
+    const user = await User.findById(req.user.id)
+      .select("-password")
+      .populate("followers", "name profilePic")
+      .populate("following", "name profilePic");
 
     const posts = await Post.find({ author: user._id }).sort({ createdAt: -1 });
-
-
 
     res.json({ user, posts });
   } catch (err) {
