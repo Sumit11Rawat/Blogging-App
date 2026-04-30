@@ -717,12 +717,19 @@ const initials = (name = "") =>
 
   if (!user) return <div style={{ padding: "50px", textAlign: "center" }}>Loading…</div>;
 
+  const publishedCount = posts.filter(p => p.status === "published").length;
+  const draftCount = posts.filter(p => p.status === "draft").length;
+
   const stats = [
-    { icon: "📝", bg: "#ecfdf5", label: "Total Posts", value: posts.length },
+    { 
+      icon: "📝", 
+      bg: "#ecfdf5", 
+      label: "Total Posts", 
+      value: posts.length,
+      subValue: `${publishedCount} Published · ${draftCount} Drafts`
+    },
     { icon: "👥", bg: "#fff7ed", label: "Followers", value: user?.followers?.length || 0, clickable: true, type: "followers" },
     { icon: "🤝", bg: "#eff6ff", label: "Following", value: user?.following?.length || 0, clickable: true, type: "following" },
-    { icon: "✅", bg: "#f0fdf4", label: "Published", value: posts.filter(p => p.status === "published").length },
-    { icon: "📬", bg: "#fdf4ff", label: "Drafts", value: posts.filter(p => p.status === "draft").length },
   ];
 
   const handleDelete = async (id) => {
@@ -866,6 +873,7 @@ const initials = (name = "") =>
                 <div className="stat-content">
                   <div className="stat-label">{s.label}</div>
                   <div className="stat-value">{s.value}</div>
+                  {s.subValue && <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>{s.subValue}</div>}
                 </div>
               </div>
             ))}
