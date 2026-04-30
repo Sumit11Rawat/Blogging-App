@@ -69,13 +69,9 @@ const style = `
   }
 
   .profile-edit-btn {
-    position: absolute;
-    top: 24px;
-    right: 24px;
     padding: 8px 16px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(8px);
+    border-radius: 10px;
+    background: #ffffff;
     border: 1.5px solid rgba(178, 34, 34, 0.2);
     display: flex;
     align-items: center;
@@ -85,15 +81,16 @@ const style = `
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 10;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(178, 34, 34, 0.05);
+    align-self: flex-end;
+    margin-bottom: 4px;
   }
   .profile-edit-btn:hover {
-    background: #ffffff;
+    background: #fef2f2;
     border-color: #B22222;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(178, 34, 34, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(178, 34, 34, 0.12);
   }
   .profile-edit-btn:active { transform: translateY(0) scale(0.96); }
 
@@ -120,10 +117,12 @@ const style = `
   .profile-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 16px;
-    margin-top: -40px;
+    margin-top: -32px;
     position: relative;
     z-index: 2;
+    padding: 0 4px;
   }
 
   .avatar-container {
@@ -161,8 +160,10 @@ const style = `
   .user-info-dash {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
     min-width: 0;
+    flex: 1;
+    padding-top: 12px;
   }
 
   .dash-user-name {
@@ -471,7 +472,7 @@ const style = `
     .avatar-container { width: 52px; height: 52px; border-width: 2px; }
     .dash-user-name { font-size: 15px; }
     .dash-user-email { font-size: 11px; }
-    .profile-edit-btn { top: 12px; right: 12px; padding: 6px 12px; font-size: 12px; }
+    .profile-edit-btn { padding: 5px 10px; font-size: 11px; margin-bottom: 2px; }
     
     .stat-card { min-width: 100%; padding: 10px 14px; }
     .stat-label { font-size: 11px; }
@@ -740,17 +741,6 @@ const initials = (name = "") =>
         </div>
 
         <div className="profile-state">
-          {/* ✏️ Top-Right Edit Button */}
-          <button
-            className="profile-edit-btn"
-            onClick={() => navigate("/profile/edit")}
-            aria-label="Edit profile details"
-            title="Edit profile"
-          >
-            <span>✏️</span>
-            <span>Edit Profile</span>
-          </button>
-
           {/* 🖼️ Background Image Section */}
           <div className="profile-bg-container">
             {previewBgUrl || user?.backgroundImage ? (
@@ -806,6 +796,15 @@ const initials = (name = "") =>
               <div className="dash-user-name">{user?.name || "Member"}</div>
               <div className="dash-user-email">{user?.email || "No email provided"}</div>
             </div>
+            <button
+              className="profile-edit-btn"
+              onClick={() => navigate("/profile/edit")}
+              aria-label="Edit profile details"
+              title="Edit profile"
+            >
+              <span>✏️</span>
+              <span>Edit Profile</span>
+            </button>
           </div>
 
           <div className="stats-row">
